@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/jo-hoe/go-mail-service/app"
 	"github.com/jo-hoe/go-mail-service/app/secret"
+	"github.com/jo-hoe/go-mail-service/app/validation"
 
+	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -15,9 +18,10 @@ func main() {
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+	e.Validator = &validation.GenericValidator{Validator: validator.New()}
 
 	e.POST("/v1/sendmail", sendmailHandler)
-	
+
 	secretService := secret.NewEnvSecretService()
 	port, err := secretService.Get("API_PORT")
 	if err != nil {
@@ -27,14 +31,37 @@ func main() {
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", port)))
 }
 
+func sendmailHandler(context echo.Context) (err error) {
+	mailAttributes := new(app.MailAttributes)
+	if err = context.Bind(mailAttributes); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err = context.Validate(mailAttributes); err != nil {
+		return err
+	}
 
-func sendmailHandler(context echo.Context) error {
-	//secretService := secret.NewEnvSecretService()
+	secretService := secret.NewEnvSecretService()
+	apiKey, err := secretService.Get("SENDGRID_API_KEY")
+	if err != nil {
+		return err
+	}
+	fromName, err := secretService.Get("DEFAULT_FROM_NAME")
+	if err != nil {
+		return err
+	}
+	fromAddress, err := secretService.Get("DEFAULT_FROM_ADDRESS")
+	if err != nil {
+		return err
+	}
 
-	//mailAttributes := new(app.MailAttributes)
-	
+	mailService := app.NewSendGridService(&app.SendGridConfig{
+		APIKey: apiKey,
+		OriginAddress: fromName,
+		OriginName: fromAddress,
+	})
+	if err = mailService.SendMail(*mailAttributes); err != nil {
+		return err
+	}
 
-
-
-	return context.String(http.StatusOK, "Hello, World!")
+	return context.JSON(http.StatusOK, mailAttributes)
 }

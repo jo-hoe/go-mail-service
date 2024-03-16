@@ -1,4 +1,4 @@
-package validator
+package validation
 
 import (
 	"net/http"
@@ -55,7 +55,7 @@ func TestGenericValidator_Validate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gv := &GenericValidator{
-				validator: validator.New(),
+				Validator: validator.New(),
 			}
 			err := gv.Validate(tt.args.i)
 			if tt.wantErr {

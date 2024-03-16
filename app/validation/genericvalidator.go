@@ -1,4 +1,4 @@
-package validator
+package validation
 
 import (
 	"fmt"
@@ -9,11 +9,11 @@ import (
 )
 
 type GenericValidator struct {
-    validator *validator.Validate
+    Validator *validator.Validate
 }
 
 func (gv *GenericValidator) Validate(i interface{}) error {
-	if err := gv.validator.Struct(i); err != nil {
+	if err := gv.Validator.Struct(i); err != nil {
 	  return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("received invalid request body: %v", err))
 	}
 	return nil
