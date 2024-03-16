@@ -1,0 +1,10 @@
+version: "3"
+services:
+  go-sendgrid-service:
+    build: .
+    image: go-sendgrid-service
+    ports:
+      # external:internal
+      - "8081:80"
+    env_file:
+      - .env
