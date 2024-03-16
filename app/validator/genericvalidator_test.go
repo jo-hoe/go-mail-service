@@ -2,10 +2,10 @@ package validator
 
 import (
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/go-playground/validator"
-	"github.com/stretchr/testify/assert"
 )
 
 type User struct {
@@ -59,11 +59,19 @@ func TestGenericValidator_Validate(t *testing.T) {
 			}
 			err := gv.Validate(tt.args.i)
 			if tt.wantErr {
-				assert.Error(t, err)
-				assert.Equal(t, http.StatusBadRequest, 400)
-				assert.Contains(t, err.Error(), "received invalid request body")
+				if err == nil {
+					t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
+				}
+				if http.StatusBadRequest != 400 {
+					t.Errorf("Validate() error status = %v, want %v", http.StatusBadRequest, 400)
+				}
+				if !strings.Contains(err.Error(), "received invalid request body") {
+					t.Errorf("Validate() error message = %v, want %v", err.Error(), "received invalid request body")
+				}
 			} else {
-				assert.NoError(t, err)
+				if err != nil {
+					t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
+				}
 			}
 		})
 	}
