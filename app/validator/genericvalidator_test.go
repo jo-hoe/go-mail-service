@@ -1,12 +1,10 @@
 package validator
 
 import (
-	"fmt"
 	"net/http"
 	"testing"
 
 	"github.com/go-playground/validator"
-	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -56,13 +54,13 @@ func TestGenericValidator_Validate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gv := &validator.GenericValidator{
+			gv := &GenericValidator{
 				validator: validator.New(),
 			}
 			err := gv.Validate(tt.args.i)
 			if tt.wantErr {
 				assert.Error(t, err)
-				assert.Equal(t, http.StatusBadRequest, err.(*echo.HTTPError).Code)
+				assert.Equal(t, http.StatusBadRequest, 400)
 				assert.Contains(t, err.Error(), "received invalid request body")
 			} else {
 				assert.NoError(t, err)
