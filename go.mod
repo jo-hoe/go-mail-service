@@ -1,4 +1,4 @@
-module github.com/jo-hoe/go-sendgrid-service
+module github.com/jo-hoe/go-mail-service
 
 go 1.22.1
 

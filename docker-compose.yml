@@ -1,8 +1,8 @@
 version: "3"
 services:
-  go-sendgrid-service:
+  go-mail-service:
     build: .
-    image: go-sendgrid-service
+    image: go-mail-service
     ports:
       # external:internal
       - "8081:80"

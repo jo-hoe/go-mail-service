@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/jo-hoe/go-sendgrid-service/app/secret"
+	"github.com/jo-hoe/go-mail-service/app/secret"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
