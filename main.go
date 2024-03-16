@@ -16,8 +16,8 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	e.GET("/", hello)
-
+	e.POST("/v1/sendmail", sendmailHandler)
+	
 	secretService := secret.NewEnvSecretService()
 	port, err := secretService.Get("API_PORT")
 	if err != nil {
@@ -27,6 +27,14 @@ func main() {
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", port)))
 }
 
-func hello(context echo.Context) error {
+
+func sendmailHandler(context echo.Context) error {
+	//secretService := secret.NewEnvSecretService()
+
+	//mailAttributes := new(app.MailAttributes)
+	
+
+
+
 	return context.String(http.StatusOK, "Hello, World!")
 }
