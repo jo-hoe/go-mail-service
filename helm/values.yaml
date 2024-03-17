@@ -12,7 +12,7 @@ sendgrid:
 replicaCount: 1
 
 image:
-  repository: ghcr.io/jo-hoe/go-mail-service:1.0.0
+  repository: ghcr.io/jo-hoe/go-mail-service
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""

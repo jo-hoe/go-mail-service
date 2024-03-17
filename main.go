@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	"github.com/jo-hoe/go-mail-service/app/mail"
+	"github.com/jo-hoe/go-mail-service/app/mail/sendgrid"
 	"github.com/jo-hoe/go-mail-service/app/secret"
 	"github.com/jo-hoe/go-mail-service/app/validation"
-	"github.com/jo-hoe/go-mail-service/app/mail/sendgrid"
 
 	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
@@ -56,9 +56,9 @@ func sendmailHandler(context echo.Context) (err error) {
 	}
 
 	mailService := sendgrid.NewSendGridService(&sendgrid.SendGridConfig{
-		APIKey: apiKey,
+		APIKey:        apiKey,
 		OriginAddress: fromAddress,
-		OriginName: fromName,
+		OriginName:    fromName,
 	})
 	if err = mailService.SendMail(*mailAttributes); err != nil {
 		return err
