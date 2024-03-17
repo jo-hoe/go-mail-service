@@ -56,8 +56,8 @@ func sendmailHandler(context echo.Context) (err error) {
 
 	mailService := app.NewSendGridService(&app.SendGridConfig{
 		APIKey: apiKey,
-		OriginAddress: fromName,
-		OriginName: fromAddress,
+		OriginAddress: fromAddress,
+		OriginName: fromName,
 	})
 	if err = mailService.SendMail(*mailAttributes); err != nil {
 		return err
