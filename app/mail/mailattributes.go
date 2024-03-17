@@ -1,4 +1,4 @@
-package app
+package mail
 
 // MailAttributes contains E-Mail attributes
 type MailAttributes struct {

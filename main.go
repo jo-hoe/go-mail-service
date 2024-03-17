@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/jo-hoe/go-mail-service/app"
+	"github.com/jo-hoe/go-mail-service/app/mail"
 	"github.com/jo-hoe/go-mail-service/app/secret"
 	"github.com/jo-hoe/go-mail-service/app/validation"
+	"github.com/jo-hoe/go-mail-service/app/mail/sendgrid"
 
 	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
@@ -32,7 +33,7 @@ func main() {
 }
 
 func sendmailHandler(context echo.Context) (err error) {
-	mailAttributes := new(app.MailAttributes)
+	mailAttributes := new(mail.MailAttributes)
 	if err = context.Bind(mailAttributes); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -54,7 +55,7 @@ func sendmailHandler(context echo.Context) (err error) {
 		return err
 	}
 
-	mailService := app.NewSendGridService(&app.SendGridConfig{
+	mailService := sendgrid.NewSendGridService(&sendgrid.SendGridConfig{
 		APIKey: apiKey,
 		OriginAddress: fromAddress,
 		OriginName: fromName,

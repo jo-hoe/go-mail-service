@@ -1,10 +1,12 @@
-package app
+package sendgrid
 
 import (
 	"fmt"
 
+	"github.com/jo-hoe/go-mail-service/app/mail"
+
 	"github.com/sendgrid/sendgrid-go"
-	"github.com/sendgrid/sendgrid-go/helpers/mail"
+	sgmail "github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
 // SendGridConfig contain all attributes to initialize the SendGrid mail service
@@ -17,37 +19,37 @@ type SendGridConfig struct {
 // SendGridService implements MailService
 type SendGridService struct {
 	config   *SendGridConfig
-	messages []*mail.SGMailV3
+	messages []*sgmail.SGMailV3
 }
 
 // NewSendGridService creates a SendGridService using an already initializes service
 func NewSendGridService(config *SendGridConfig) *SendGridService {
 	return &SendGridService{
 		config:   config,
-		messages: make([]*mail.SGMailV3, 0),
+		messages: make([]*sgmail.SGMailV3, 0),
 	}
 }
 
 // createMessages a sendgrid message
-func (service *SendGridService) createMessage(attributes MailAttributes) *mail.SGMailV3 {
+func (service *SendGridService) createMessage(attributes mail.MailAttributes) *sgmail.SGMailV3 {
 	// create new *SGMailV3
-	mailObject := mail.NewV3Mail()
+	mailObject := sgmail.NewV3Mail()
 
-	from := mail.NewEmail(service.config.OriginName, service.config.OriginAddress)
-	content := mail.NewContent("text/html", attributes.Content)
+	from := sgmail.NewEmail(service.config.OriginName, service.config.OriginAddress)
+	content := sgmail.NewContent("text/html", attributes.Content)
 
 	mailObject.SetFrom(from)
 	mailObject.AddContent(content)
 
 	// create new *Personalization
-	personalization := mail.NewPersonalization()
+	personalization := sgmail.NewPersonalization()
 
 	personalization.Subject = attributes.Subject
 	// populate `personalization` with data
-	emails := []*mail.Email{}
+	emails := []*sgmail.Email{}
 
 	for _, mailAddress := range attributes.To {
-		mail, _ := mail.ParseEmail(mailAddress)
+		mail, _ := sgmail.ParseEmail(mailAddress)
 		emails = append(emails, mail)
 	}
 
@@ -58,12 +60,12 @@ func (service *SendGridService) createMessage(attributes MailAttributes) *mail.S
 	return mailObject
 }
 
-func (service *SendGridService) SendMail(attributes MailAttributes) error {
+func (service *SendGridService) SendMail(attributes mail.MailAttributes) error {
 	message := service.createMessage(attributes)
 	return service.sendRequest(message)
 }
 
-func (service *SendGridService) sendRequest(mailObject *mail.SGMailV3) error {
+func (service *SendGridService) sendRequest(mailObject *sgmail.SGMailV3) error {
 	request := sendgrid.GetRequest(
 		service.config.APIKey,
 		"/v3/mail/send",
@@ -71,7 +73,7 @@ func (service *SendGridService) sendRequest(mailObject *mail.SGMailV3) error {
 	)
 
 	request.Method = "POST"
-	request.Body = mail.GetRequestBody(mailObject)
+	request.Body = sgmail.GetRequestBody(mailObject)
 	result, err := sendgrid.API(request)
 
 	if result.StatusCode != 202 {
