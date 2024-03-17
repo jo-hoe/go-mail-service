@@ -16,6 +16,7 @@ start-k3d: ## start helm chart in K3d
 	 							--set defaultSenderMailAddress=$(DEFAULT_FROM_ADDRESS) \
 								--set defaultSenderName=$(DEFAULT_FROM_NAME) \
 								--set sendgrid.apiKey=$(SENDGRID_API_KEY) \
+								--set service.enabled=false \
 								${ROOT_DIR}helm/
 
 .PHONY: stop-k3d

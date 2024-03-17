@@ -5,6 +5,6 @@ metadata:
 servers: 1
 agents: 1 
 ports:
-  - port: 8080:80 # same as `--port '8080:80@loadbalancer'`
+  - port: 80:80 # same as `--port '80:80@loadbalancer'`
     nodeFilters:
       - loadbalancer
