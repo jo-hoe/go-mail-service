@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "go-mail-service.fullname" . }}-config
+  labels:
+    {{- include "go-mail-service.labels" . | nindent 4 }}
+data:
+  DEFAULT_FROM_ADDRESS: "{{ .Values.defaultMailAddress }}"
+  DEFAULT_FROM_NAME: "{{ .Values.defaultMailName }}"
