@@ -6,6 +6,40 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/jo-hoe/go-mail-service)](https://goreportcard.com/report/github.com/jo-hoe/go-mail-service)
 [![Coverage Status](https://coveralls.io/repos/github/jo-hoe/go-mail-service/badge.svg?branch=main)](https://coveralls.io/github/jo-hoe/go-mail-service?branch=main)
 
+Service that allow to send mails. Currently only [Sendgrid](https://sendgrid.com/) is implemented.
+
+## Setup
+
+### Pre-Requisites
+
+- [Golang](https://go.dev/doc/install)
+- [Docker](https://docs.docker.com/engine/install/)
+
+#### Optional
+
+- [K3d](https://k3d.io/v5.6.0/#releases)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/)
+- [helm](https://helm.sh/docs/intro/install/)
+
+Use `make` to run the project. Make is typically installed out of the box on Linux and Mac.
+
+If you do not have it and run on Windows, you can directly install it from [gnuwin32](https://gnuwin32.sourceforge.net/packages/make.htm) or via `winget`
+
+```PowerShell
+winget install GnuWin32.Make
+```
+
+### Environment
+
+Setup an .env file with the following content
+
+```.env
+API_PORT=80
+DEFAULT_FROM_ADDRESS=<email address>
+DEFAULT_FROM_NAME=<mail sender in clear text>
+SENDGRID_API_KEY=<sendgrid api key>
+```
+
 ## Example Request
 
 ```bash
