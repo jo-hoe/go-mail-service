@@ -56,12 +56,12 @@ spec:
                 configMapKeyRef:
                   name: {{ include "go-mail-service.fullname" . }}-config
                   key: apiPort
-            - name: DEFAULT_FROM_NAME
+            - name: DEFAULT_FROM_ADDRESS
               valueFrom:
                 configMapKeyRef:
                   name: {{ include "go-mail-service.fullname" . }}-config
                   key: defaultSenderMailAddress
-            - name: DEFAULT_FROM_ADDRESS
+            - name: DEFAULT_FROM_NAME
               valueFrom:
                 configMapKeyRef:
                   name: {{ include "go-mail-service.fullname" . }}-config
