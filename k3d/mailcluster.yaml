@@ -1,0 +1,10 @@
+apiVersion: k3d.io/v1alpha5
+kind: Simple
+metadata:
+  name: mailcluster # (will still be prefixed with `k3d-`)
+servers: 1
+agents: 1 
+ports:
+  - port: 8080:80 # same as `--port '8080:80@loadbalancer'`
+    nodeFilters:
+      - loadbalancer
