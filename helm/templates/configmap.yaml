@@ -5,5 +5,6 @@ metadata:
   labels:
     {{- include "go-mail-service.labels" . | nindent 4 }}
 data:
-  DEFAULT_FROM_ADDRESS: "{{ .Values.defaultMailAddress }}"
-  DEFAULT_FROM_NAME: "{{ .Values.defaultMailName }}"
+  apiPort: "{{ .Values.service.port }}"
+  defaultSenderMailAddress: "{{ .Values.defaultSenderMailAddress }}"
+  defaultSenderName: "{{ .Values.defaultSenderName }}"

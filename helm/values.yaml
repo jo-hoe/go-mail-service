@@ -2,8 +2,8 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-defaultMailAddress: default@gomailservice.com
-defaultMailName: GoMailService
+defaultSenderMailAddress: default@gomailservice.com
+defaultSenderName: GoMailService
 
 sendgrid:
   enabled: true
@@ -12,7 +12,7 @@ sendgrid:
 replicaCount: 1
 
 image:
-  repository: nginx
+  repository: ghcr.io/jo-hoe/go-mail-service:1.0.0
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
