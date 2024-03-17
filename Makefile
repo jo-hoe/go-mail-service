@@ -27,3 +27,7 @@ stop-k3d: ## stop K3d
 .PHONY: start
 start: ## rebuild and start via docker
 	@docker compose up --build
+
+.PHONY: generate-helm-docs
+generate-helm-docs: ## generates helm docu in /helm folder 
+	@docker run --rm --volume "$(ROOT_DIR)/helm:/helm-docs" jnorwood/helm-docs:latest
