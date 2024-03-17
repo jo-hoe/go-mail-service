@@ -70,7 +70,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ include "go-mail-service.fullname" . }}-secret
-                  key: sendgrid-api-key
+                  key: sendgridApiKey
       {{- with .Values.volumes }}
       volumes:
         {{- toYaml . | nindent 8 }}

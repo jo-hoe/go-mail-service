@@ -22,6 +22,7 @@ func main() {
 	e.Validator = &validation.GenericValidator{Validator: validator.New()}
 
 	e.POST("/v1/sendmail", sendmailHandler)
+	e.GET("/", probeHandler)
 
 	secretService := secret.NewEnvSecretService()
 	port, err := secretService.Get("API_PORT")
@@ -32,12 +33,12 @@ func main() {
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", port)))
 }
 
-func sendmailHandler(context echo.Context) (err error) {
+func sendmailHandler(ctx echo.Context) (err error) {
 	mailAttributes := new(mail.MailAttributes)
-	if err = context.Bind(mailAttributes); err != nil {
+	if err = ctx.Bind(mailAttributes); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	if err = context.Validate(mailAttributes); err != nil {
+	if err = ctx.Validate(mailAttributes); err != nil {
 		return err
 	}
 
@@ -60,9 +61,13 @@ func sendmailHandler(context echo.Context) (err error) {
 		OriginAddress: fromAddress,
 		OriginName:    fromName,
 	})
-	if err = mailService.SendMail(context.Request().Context(), *mailAttributes); err != nil {
+	if err = mailService.SendMail(ctx.Request().Context(), *mailAttributes); err != nil {
 		return err
 	}
 
-	return context.JSON(http.StatusOK, mailAttributes)
+	return ctx.JSON(http.StatusOK, mailAttributes)
+}
+
+func probeHandler(ctx echo.Context) (err error) {
+	return ctx.NoContent(http.StatusOK)
 }
