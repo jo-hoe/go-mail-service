@@ -21,7 +21,7 @@ func main() {
 	e.Use(middleware.Recover())
 	e.Validator = &validation.GenericValidator{Validator: validator.New()}
 
-	e.POST("/v1/sendmail", sendmailHandler)
+	e.POST("/v1/sendmail", sendMailHandler)
 	e.GET("/", probeHandler)
 
 	secretService := secret.NewEnvSecretService()
@@ -33,7 +33,7 @@ func main() {
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", port)))
 }
 
-func sendmailHandler(ctx echo.Context) (err error) {
+func sendMailHandler(ctx echo.Context) (err error) {
 	mailAttributes := new(mail.MailAttributes)
 	if err = ctx.Bind(mailAttributes); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
@@ -47,13 +47,25 @@ func sendmailHandler(ctx echo.Context) (err error) {
 	if err != nil {
 		return err
 	}
-	fromName, err := secretService.Get("DEFAULT_FROM_NAME")
-	if err != nil {
-		return err
+
+	fromAddress := ""
+	if mailAttributes.From != "" {
+		fromAddress = mailAttributes.From
+	} else {
+		fromAddress, err = secretService.Get("DEFAULT_FROM_ADDRESS")
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "'from' address is not set")
+		}
 	}
-	fromAddress, err := secretService.Get("DEFAULT_FROM_ADDRESS")
-	if err != nil {
-		return err
+
+	fromName := ""
+	if mailAttributes.FromName != "" {
+		fromName = mailAttributes.FromName
+	} else {
+		fromName, err = secretService.Get("DEFAULT_FROM_NAME")
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "'fromName' is not set")
+		}
 	}
 
 	mailService := sendgrid.NewSendGridService(&sendgrid.SendGridConfig{
