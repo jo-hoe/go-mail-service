@@ -13,8 +13,8 @@ Go Service for sending emails
 | autoscaling.maxReplicas | int | `100` |  |
 | autoscaling.minReplicas | int | `1` |  |
 | autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
-| defaultSenderMailAddress | string | `"default@gomailservice.com"` | This is the mail address the service will  per default send mails from  |
-| defaultSenderName | string | `"GoMailService"` | This is the name of the sender who  the service will send mails as |
+| defaultSenderMailAddress | string | `""` | This is the mail address the service will  per default send mails from  |
+| defaultSenderName | string | `""` | This is the name of the sender who  the service will send mails as |
 | fullnameOverride | string | `""` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.repository | string | `"ghcr.io/jo-hoe/go-mail-service"` |  |

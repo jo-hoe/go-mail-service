@@ -4,10 +4,10 @@
 
 # -- This is the mail address the service will 
 # per default send mails from 
-defaultSenderMailAddress: default@gomailservice.com
+defaultSenderMailAddress: ""
 # -- This is the name of the sender who 
 # the service will send mails as
-defaultSenderName: GoMailService
+defaultSenderName: ""
 
 sendgrid:
   # -- api key for sendgrid
