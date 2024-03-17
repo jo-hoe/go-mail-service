@@ -1,6 +1,7 @@
 package sendgrid
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/jo-hoe/go-mail-service/app/mail"
@@ -60,12 +61,12 @@ func (service *SendGridService) createMessage(attributes mail.MailAttributes) *s
 	return mailObject
 }
 
-func (service *SendGridService) SendMail(attributes mail.MailAttributes) error {
+func (service *SendGridService) SendMail(ctx context.Context, attributes mail.MailAttributes) error {
 	message := service.createMessage(attributes)
-	return service.sendRequest(message)
+	return service.sendRequest(ctx, message)
 }
 
-func (service *SendGridService) sendRequest(mailObject *sgmail.SGMailV3) error {
+func (service *SendGridService) sendRequest(ctx context.Context, mailObject *sgmail.SGMailV3) error {
 	request := sendgrid.GetRequest(
 		service.config.APIKey,
 		"/v3/mail/send",
@@ -74,7 +75,7 @@ func (service *SendGridService) sendRequest(mailObject *sgmail.SGMailV3) error {
 
 	request.Method = "POST"
 	request.Body = sgmail.GetRequestBody(mailObject)
-	result, err := sendgrid.API(request)
+	result, err := sendgrid.MakeRequestWithContext(ctx, request)
 
 	if result.StatusCode != 202 {
 		return fmt.Errorf("SendGrid could not send mail. [%d]: %s", result.StatusCode, result.Body)

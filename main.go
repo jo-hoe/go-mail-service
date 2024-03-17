@@ -60,7 +60,7 @@ func sendmailHandler(context echo.Context) (err error) {
 		OriginAddress: fromAddress,
 		OriginName:    fromName,
 	})
-	if err = mailService.SendMail(*mailAttributes); err != nil {
+	if err = mailService.SendMail(context.Request().Context(), *mailAttributes); err != nil {
 		return err
 	}
 
