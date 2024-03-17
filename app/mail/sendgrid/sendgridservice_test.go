@@ -20,9 +20,9 @@ func Test_AddMessage(t *testing.T) {
 
 	sender := NewSendGridService(&config)
 	message := sender.createMessage(mail.MailAttributes{
-		To:      []string{"test@test.com"},
-		Subject: "test",
-		Content: "test content",
+		To:          []string{"test@test.com"},
+		Subject:     "test",
+		HtmlContent: "test content",
 	})
 
 	if message == nil {

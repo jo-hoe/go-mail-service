@@ -37,7 +37,7 @@ func (service *SendGridService) createMessage(attributes mail.MailAttributes) *s
 	mailObject := sgmail.NewV3Mail()
 
 	from := sgmail.NewEmail(service.config.OriginName, service.config.OriginAddress)
-	content := sgmail.NewContent("text/html", attributes.Content)
+	content := sgmail.NewContent("text/html", attributes.HtmlContent)
 
 	mailObject.SetFrom(from)
 	mailObject.AddContent(content)
