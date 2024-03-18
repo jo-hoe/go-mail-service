@@ -30,4 +30,4 @@ start: ## rebuild and start via docker
 
 .PHONY: generate-helm-docs
 generate-helm-docs: ## generates helm docu in /helm folder 
-	@docker run --rm --volume "$(ROOT_DIR)/helm:/helm-docs" jnorwood/helm-docs:latest
+	@docker run --rm --volume "$(ROOT_DIR)charts/go-mail-service:/helm-docs" jnorwood/helm-docs:latest
