@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  go-mail-service:
+  - apiVersion: v2
+    appVersion: 1.2.1
+    created: "2024-03-18T14:23:53.212221755Z"
+    description: Go Service for sending emails
+    digest: 3b8f1e2863f8e7ed5e3ec9212eb17ca47471daaf965011153d2db3d007030718
+    name: go-mail-service
+    type: application
+    urls:
+    - https://github.com/jo-hoe/go-mail-service/releases/download/go-mail-service-0.0.6/go-mail-service-0.0.6.tgz
+    version: 0.0.6
+generated: "2024-03-18T14:23:53.212231132Z"
