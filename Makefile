@@ -17,7 +17,7 @@ start-k3d: ## start helm chart in K3d
 								--set defaultSenderName=$(DEFAULT_FROM_NAME) \
 								--set sendgrid.apiKey=$(SENDGRID_API_KEY) \
 								--set service.enabled=false \
-								${ROOT_DIR}helm/
+								${ROOT_DIR}charts/go-mail-service
 	@kubectl apply -f ${ROOT_DIR}k3d/service.yaml
 
 .PHONY: stop-k3d
