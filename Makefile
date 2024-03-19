@@ -6,19 +6,31 @@ export
 
 # get root dir
 ROOT_DIR := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
+IMAGE_NAME := go-mail-service
+IMAGE_VERSION := 1.2.1
 
 .DEFAULT_GOAL := start
 
 .PHONY: start-k3d
-start-k3d: ## start helm chart in K3d
+start-k3d:
 	@k3d cluster create --config ${ROOT_DIR}k3d/mailcluster.yaml
 	@helm install gomailservice --set service.port=$(API_PORT) \
 	 							--set defaultSenderMailAddress=$(DEFAULT_FROM_ADDRESS) \
 								--set defaultSenderName=$(DEFAULT_FROM_NAME) \
 								--set sendgrid.apiKey=$(SENDGRID_API_KEY) \
 								--set service.enabled=false \
+								--set image.repository=registry.localhost:5000/${IMAGE_NAME} \
 								${ROOT_DIR}charts/go-mail-service
 	@kubectl apply -f ${ROOT_DIR}k3d/service.yaml
+
+.PHONY: push-to-registry
+push-to-registry: ## build and push docker image to registry
+	@docker build -f ${ROOT_DIR}Dockerfile . -t ${IMAGE_NAME}
+	@docker tag ${IMAGE_NAME} localhost:5000/${IMAGE_NAME}:${IMAGE_VERSION}
+	@docker push localhost:5000/${IMAGE_NAME}:${IMAGE_VERSION}
+
+.PHONY: start-deloy
+start-deloy: start-k3d push-to-registry ## starts k3d and deploys local image with loadbalancer
 
 .PHONY: stop-k3d
 stop-k3d: ## stop K3d
