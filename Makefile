@@ -11,8 +11,8 @@ IMAGE_VERSION := 1.2.1
 
 .DEFAULT_GOAL := start
 
-.PHONY: start-k3d
-start-k3d:
+.PHONY: start-cluster
+start-cluster:
 	@k3d cluster create --config ${ROOT_DIR}k3d/mailcluster.yaml
 	@helm install gomailservice --set service.port=$(API_PORT) \
 	 							--set defaultSenderMailAddress=$(DEFAULT_FROM_ADDRESS) \
@@ -29,8 +29,8 @@ push-to-registry: ## build and push docker image to registry
 	@docker tag ${IMAGE_NAME} localhost:5000/${IMAGE_NAME}:${IMAGE_VERSION}
 	@docker push localhost:5000/${IMAGE_NAME}:${IMAGE_VERSION}
 
-.PHONY: start-deloy
-start-deloy: start-k3d push-to-registry ## starts k3d and deploys local image with loadbalancer
+.PHONY: start-k3d
+start-k3d: start-cluster push-to-registry ## starts k3d and deploys local image with loadbalancer
 
 .PHONY: stop-k3d
 stop-k3d: ## stop K3d
