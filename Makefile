@@ -17,7 +17,7 @@ start-cluster:
 	@helm install gomailservice --set service.port=$(API_PORT) \
 	 							--set defaultSenderMailAddress=$(DEFAULT_FROM_ADDRESS) \
 								--set defaultSenderName=$(DEFAULT_FROM_NAME) \
-								--set sendgrid.apiKey=$(SENDGRID_API_KEY) \
+								--set sendgridService.apiKey=$(SENDGRID_API_KEY) \
 								--set service.enabled=false \
 								--set image.repository=registry.localhost:5000/${IMAGE_NAME} \
 								${ROOT_DIR}charts/go-mail-service

@@ -1,9 +1,7 @@
 package sendgrid
 
 import (
-	"errors"
 	"os"
-	"path/filepath"
 	"reflect"
 	"testing"
 
@@ -15,19 +13,9 @@ func Test_Integration_createConfig(t *testing.T) {
 	defer os.Unsetenv(defaultAddressEnvKey)
 	os.Setenv(defaultNameEnvKey, "default-name")
 	defer os.Unsetenv(defaultNameEnvKey)
-
-
 	content := "super-secret-api-key"	
-	rootDirectory, fileName := setupIntegrationTestFile(t, content)
-	filePath := filepath.Join(rootDirectory, fileName)
-	// order of defers matter as file need to be closed
-	// before we can delete the folder
-	defer func() {
-		err := os.RemoveAll(rootDirectory)
-		if err != nil {
-			t.Errorf("could not delete file '%+v'", err)
-		}
-	}()
+	os.Setenv(apiEnvKey, content)
+	defer os.Unsetenv(apiEnvKey)
 
 	type args struct {
 		mailAttributes mail.MailAttributes
@@ -68,18 +56,7 @@ func Test_Integration_createConfig(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {			
-			file, err := os.Open(filePath)
-			if err != nil {
-				t.Error("could not open file")
-			}
-			defer func() {
-				err := file.Close()
-				if err != nil {
-					t.Errorf("could not delete file '%+v'", err)
-				}
-			}()
-
-			got, err := createConfig(tt.args.mailAttributes, file)
+			got, err := createConfig(tt.args.mailAttributes)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("createConfig() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -117,7 +94,7 @@ func Test_createConfig(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := createConfig(tt.args.mailAttributes, AlwaysErrorReader{})
+			got, err := createConfig(tt.args.mailAttributes)
 			if (err == nil) {
 				t.Errorf("createConfig() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -127,33 +104,4 @@ func Test_createConfig(t *testing.T) {
 			}
 		})
 	}
-}
-
-func setupIntegrationTestFile(t *testing.T, content string) (rootDirectory string, fileName string) {
-	rootDirectory, err := os.MkdirTemp(os.TempDir(), "testDir")
-	if err != nil {
-		t.Error("could not create folder")
-	}
-	file, err := os.CreateTemp(rootDirectory, "testFile")
-	if err != nil {
-		t.Error("could not create file")
-	}
-	defer file.Close()
-
-	_, err = file.WriteString(content)
-	if err != nil {
-		t.Errorf("could not write to file %+v", err)
-	}
-	fileName = filepath.Base(file.Name())
-	if err != nil {
-		t.Errorf("could not close file %+v", err)
-	}
-
-	return rootDirectory, fileName
-}
-
-type AlwaysErrorReader struct{}
-
-func (a AlwaysErrorReader) Read(p []byte) (n int, err error) {
-	return 0, errors.New("always error")
 }

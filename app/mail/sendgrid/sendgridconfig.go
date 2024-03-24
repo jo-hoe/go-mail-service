@@ -1,9 +1,6 @@
 package sendgrid
 
 import (
-	"io"
-	"os"
-
 	"github.com/jo-hoe/go-mail-service/app/config"
 	"github.com/jo-hoe/go-mail-service/app/mail"
 )
@@ -15,24 +12,18 @@ type SendGridConfig struct {
 	OriginName    string
 }
 
-const apiKeyFilePath = "./run/secrets/sendgrid_api_key.txt"
+const apiEnvKey = "SENDGRID_API_KEY"
 const defaultAddressEnvKey = "DEFAULT_FROM_ADDRESS"
 const defaultNameEnvKey = "DEFAULT_FROM_NAME"
 
 func NewSendGridConfig(mailAttributes mail.MailAttributes) (result *SendGridConfig, err error) {
-	file, err := os.Open(apiKeyFilePath)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	return createConfig(mailAttributes, file)
+	return createConfig(mailAttributes)
 }
 
-func createConfig(mailAttributes mail.MailAttributes, reader io.Reader) (*SendGridConfig, error) {
-	secretService := config.NewSecretFileService()
+func createConfig(mailAttributes mail.MailAttributes) (*SendGridConfig, error) {
+	envService := config.NewEnvService()
 
-	apiKey, err := secretService.Get(reader)
+	apiKey, err := envService.Get(apiEnvKey)
 	if err != nil {
 		return nil, err
 	}
@@ -55,12 +46,12 @@ func createConfig(mailAttributes mail.MailAttributes, reader io.Reader) (*SendGr
 }
 
 func getField(userInput string, defaultEnvKey string) (result string, err error) {
-	secretService := config.NewEnvService()
+	envService := config.NewEnvService()
 	fromAddress := ""
 	if userInput != "" {
 		fromAddress = userInput
 	} else {
-		fromAddress, err = secretService.Get(defaultEnvKey)
+		fromAddress, err = envService.Get(defaultEnvKey)
 		if err != nil {
 			return "", err
 		}

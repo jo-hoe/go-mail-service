@@ -37,9 +37,30 @@ Setup an .env file with the following content
 
 ```.env
 API_PORT=80
+IS_SENDGRID_ENABLED=true
+IS_NOOP_ENABLED=false
 DEFAULT_FROM_ADDRESS=<email address>
 DEFAULT_FROM_NAME=<mail sender in clear text>
 SENDGRID_API_KEY=<sendgrid api key>
+```
+
+## Run
+
+### Docker
+
+For plain docker run to the following commands
+
+```bash
+docker build . -t go-mail-service
+docker run --rm -p 80:80 --env-file .env go-mail-service
+```
+
+### K3s
+
+To run in k3d use the following command
+
+```bash
+make start-k3s
 ```
 
 ## Example Request
