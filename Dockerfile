@@ -13,6 +13,10 @@ RUN mkdir /secrets
 
 FROM gcr.io/distroless/static-debian11
 
+ENV API_PORT=80 \
+    IS_NOOP_ENABLED=true \
+    IS_SENDGRID_ENABLED=false
+
 COPY --from=build /go/bin/app /
 COPY --from=build /secrets /run/secrets
 
