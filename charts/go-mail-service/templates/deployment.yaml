@@ -66,11 +66,23 @@ spec:
                 configMapKeyRef:
                   name: {{ include "go-mail-service.fullname" . }}-config
                   key: defaultSenderName
+            - name: IS_NOOP_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "go-mail-service.fullname" . }}-config
+                  key: isNoopServiceEnabled
+            - name: IS_SENDGRID_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "go-mail-service.fullname" . }}-config
+                  key: isSendgridServiceEnabled
+            {{- if .Values.sendgridService.enabled }}
             - name: SENDGRID_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "go-mail-service.fullname" . }}-secret
+                  name: "{{ .Values.sendgridService.secretName }}"
                   key: sendgridApiKey
+            {{- end }}
       {{- with .Values.volumes }}
       volumes:
         {{- toYaml . | nindent 8 }}

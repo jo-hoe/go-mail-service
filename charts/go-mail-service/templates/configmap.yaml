@@ -8,3 +8,7 @@ data:
   apiPort: "{{ .Values.service.port }}"
   defaultSenderMailAddress: "{{ .Values.defaultSenderMailAddress }}"
   defaultSenderName: "{{ .Values.defaultSenderName }}"
+  isSendgridServiceEnabled: "{{ .Values.sendgridService.enabled }}"
+  isNoopServiceEnabled: "{{ .Values.noopService.enabled }}"
+  
+

@@ -9,9 +9,17 @@ defaultSenderMailAddress: ""
 # the service will send mails as
 defaultSenderName: ""
 
-sendgrid:
+sendgridService:
+  enabled: true
   # -- api key for sendgrid
   apiKey: ""
+  secretName: "sendgrid-secret"
+
+# -- noop service allows for debugging of apps
+# it will not send mail but log perform input validation
+# and log what received
+noopService:
+  enabled: false
 
 replicaCount: 1
 
@@ -98,19 +106,6 @@ autoscaling:
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
-
-# -- Additional volumes on the output Deployment definition.
-volumes: []
-# - name: foo
-#   secret:
-#     secretName: mysecret
-#     optional: false
-
-# -- Additional volumeMounts on the output Deployment definition.
-volumeMounts: []
-# - name: foo
-#   mountPath: "/etc/foo"
-#   readOnly: true
 
 nodeSelector: {}
 
