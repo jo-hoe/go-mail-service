@@ -7,7 +7,7 @@ export
 # get root dir
 ROOT_DIR := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 IMAGE_NAME := go-mail-service
-IMAGE_VERSION := 1.2.1
+IMAGE_VERSION := 1.3.1
 
 .DEFAULT_GOAL := start
 
@@ -35,6 +35,9 @@ start-k3d: start-cluster push-to-registry ## starts k3d and deploys local image 
 .PHONY: stop-k3d
 stop-k3d: ## stop K3d
 	@k3d cluster delete --config ${ROOT_DIR}k3d/mailcluster.yaml
+
+.PHONY: restart-k3d
+restart-k3d: stop-k3d start-k3d # restart the cluster
 
 .PHONY: start
 start: ## rebuild and start via docker
