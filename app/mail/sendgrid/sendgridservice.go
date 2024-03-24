@@ -10,13 +10,6 @@ import (
 	sgmail "github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
-// SendGridConfig contain all attributes to initialize the SendGrid mail service
-type SendGridConfig struct {
-	APIKey        string
-	OriginAddress string
-	OriginName    string
-}
-
 // SendGridService implements MailService
 type SendGridService struct {
 	config   *SendGridConfig
@@ -29,6 +22,11 @@ func NewSendGridService(config *SendGridConfig) *SendGridService {
 		config:   config,
 		messages: make([]*sgmail.SGMailV3, 0),
 	}
+}
+
+func (service *SendGridService) SendMail(ctx context.Context, attributes mail.MailAttributes) error {
+	message := service.createMessage(attributes)
+	return service.sendRequest(ctx, message)
 }
 
 // createMessages a sendgrid message
@@ -59,11 +57,6 @@ func (service *SendGridService) createMessage(attributes mail.MailAttributes) *s
 	// add `personalization` to `m`
 	mailObject.AddPersonalizations(personalization)
 	return mailObject
-}
-
-func (service *SendGridService) SendMail(ctx context.Context, attributes mail.MailAttributes) error {
-	message := service.createMessage(attributes)
-	return service.sendRequest(ctx, message)
 }
 
 func (service *SendGridService) sendRequest(ctx context.Context, mailObject *sgmail.SGMailV3) error {

@@ -3,16 +3,22 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
+	"github.com/jo-hoe/go-mail-service/app/config"
 	"github.com/jo-hoe/go-mail-service/app/mail"
+	"github.com/jo-hoe/go-mail-service/app/mail/noop"
 	"github.com/jo-hoe/go-mail-service/app/mail/sendgrid"
-	"github.com/jo-hoe/go-mail-service/app/secret"
 	"github.com/jo-hoe/go-mail-service/app/validation"
 
 	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
+
+const API_PORT_ENV_KEY = "API_PORT"
+const IS_NOOP_ENABLED_ENV_KEY = "IS_NOOP_ENABLED"
+const IS_SENDGRID_ENABLED_ENV_KEY = "IS_SENDGRID_ENABLED"
 
 func main() {
 	e := echo.New()
@@ -24,12 +30,13 @@ func main() {
 	e.POST("/v1/sendmail", sendMailHandler)
 	e.GET("/", probeHandler)
 
-	secretService := secret.NewEnvSecretService()
-	port, err := secretService.Get("API_PORT")
+	envService := config.NewEnvService()
+	port, err := envService.Get(API_PORT_ENV_KEY)
 	if err != nil {
 		e.Logger.Fatal(err)
 	}
 
+	// start server
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", port)))
 }
 
@@ -42,42 +49,44 @@ func sendMailHandler(ctx echo.Context) (err error) {
 		return err
 	}
 
-	secretService := secret.NewEnvSecretService()
-	apiKey, err := secretService.Get("SENDGRID_API_KEY")
+	envService := config.NewEnvService()
+	isSendGridEnabled, err := envService.Get(IS_SENDGRID_ENABLED_ENV_KEY)
+	if err != nil {
+		return err
+	}
+	isNoopEnabled, err := envService.Get(IS_NOOP_ENABLED_ENV_KEY)
 	if err != nil {
 		return err
 	}
 
-	fromAddress := ""
-	if mailAttributes.From != "" {
-		fromAddress = mailAttributes.From
-	} else {
-		fromAddress, err = secretService.Get("DEFAULT_FROM_ADDRESS")
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "'from' address is not set")
+	if strings.ToLower(isNoopEnabled) == "true" {
+		noopService := noop.NewNoopService()
+		if err = noopService.SendMail(ctx.Request().Context(), *mailAttributes); err != nil {
+			return err
 		}
 	}
-
-	fromName := ""
-	if mailAttributes.FromName != "" {
-		fromName = mailAttributes.FromName
-	} else {
-		fromName, err = secretService.Get("DEFAULT_FROM_NAME")
+	if strings.ToLower(isSendGridEnabled) == "true" {
+		err = sendWithSendGrid(ctx, *mailAttributes)	
 		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "'fromName' is not set")
+			return err
 		}
-	}
-
-	mailService := sendgrid.NewSendGridService(&sendgrid.SendGridConfig{
-		APIKey:        apiKey,
-		OriginAddress: fromAddress,
-		OriginName:    fromName,
-	})
-	if err = mailService.SendMail(ctx.Request().Context(), *mailAttributes); err != nil {
-		return err
 	}
 
 	return ctx.JSON(http.StatusOK, mailAttributes)
+}
+
+func sendWithSendGrid(ctx echo.Context, mailAttributes mail.MailAttributes) (err error) {
+	sendgridConfig, err := sendgrid.NewSendGridConfig(mailAttributes)
+	if err != nil {
+		return err
+	}
+	mailService := sendgrid.NewSendGridService(sendgridConfig)
+
+	if err = mailService.SendMail(ctx.Request().Context(), mailAttributes); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func probeHandler(ctx echo.Context) (err error) {

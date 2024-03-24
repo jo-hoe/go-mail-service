@@ -1,4 +1,4 @@
-package secret
+package config
 
 import (
 	"os"
@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestEnvSecretService_Get(t *testing.T) {
+func TestEnvService_Get(t *testing.T) {
 	type args struct {
 		key   string
 		value string
@@ -37,19 +37,19 @@ func TestEnvSecretService_Get(t *testing.T) {
 				defer os.Unsetenv(tt.args.key)
 			}
 
-			s := NewEnvSecretService()
+			s := NewEnvService()
 			got, err := s.Get(tt.args.key)
 			if tt.wantErr {
 				if err == nil {
-					t.Errorf("EnvSecretService.Get() error = %v, wantErr %v", err, tt.wantErr)
+					t.Errorf("EnvService.Get() error = %v, wantErr %v", err, tt.wantErr)
 				}
 			} else {
 				if err != nil {
-					t.Errorf("EnvSecretService.Get() error = %v, wantErr %v", err, tt.wantErr)
+					t.Errorf("EnvService.Get() error = %v, wantErr %v", err, tt.wantErr)
 				}
 			}
 			if strings.Compare(tt.want, got) != 0 {
-				t.Errorf("EnvSecretService.Get() = %v, want %v", got, tt.want)
+				t.Errorf("EnvService.Get() = %v, want %v", got, tt.want)
 			}
 		})
 	}

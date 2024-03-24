@@ -47,3 +47,19 @@ SENDGRID_API_KEY=<sendgrid api key>
 ```bash
 curl -H "Content-Type: application/json" --data '{"subject":"my subject", "content":"my message", "to":["test@mail.de"]}' http://localhost:80/v1/sendmail
 ```
+
+## Linting
+
+The project used `golangci-lint` for linting.
+
+### Installation
+
+<https://golangci-lint.run/welcome/install/>
+
+### Run Linting
+
+Run the linting locally by executing.
+
+```cli
+golangci-lint run ./...
+```
