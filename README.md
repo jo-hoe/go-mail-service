@@ -6,7 +6,8 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/jo-hoe/go-mail-service)](https://goreportcard.com/report/github.com/jo-hoe/go-mail-service)
 [![Coverage Status](https://coveralls.io/repos/github/jo-hoe/go-mail-service/badge.svg?branch=main)](https://coveralls.io/github/jo-hoe/go-mail-service?branch=main)
 
-Service that allow to send mails. Currently only [Sendgrid](https://sendgrid.com/) is implemented.
+A simple mail service that allow to send mails.
+Currently only [Sendgrid](https://sendgrid.com/) is implemented.
 
 ## Setup
 
@@ -64,6 +65,9 @@ make start-k3s
 ```
 
 ## Example Request
+
+The service offers a basic API to send mails.
+One can specify the subject, content, and addressed to send to.
 
 ```bash
 curl -H "Content-Type: application/json" --data '{"subject":"my subject", "content":"my message", "to":["test@mail.de"]}' http://localhost:80/v1/sendmail
