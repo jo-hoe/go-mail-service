@@ -10,7 +10,7 @@ Currently only [Sendgrid](https://sendgrid.com/) is implemented.
 
 ## Setup
 
-### Pre-Requisites
+### Prerequisites
 
 - [Golang](https://go.dev/doc/install)
 - [Docker](https://docs.docker.com/engine/install/)
@@ -23,13 +23,13 @@ If you do not have it and run on Windows, you can directly install it from [gnuw
 winget install GnuWin32.Make
 ```
 
-In case your want to deploy and access the service on k3d you will need to install the following tools:
+In case you want to deploy and access the service on k3d you will need to install the following tools:
 
 - [K3d](https://k3d.io/v5.6.0/#releases)
 - [kubectl](https://kubernetes.io/docs/tasks/tools/)
 - [helm](https://helm.sh/docs/intro/install/)
 
-Use `make` to run the project. Make is typically installed out of the box on Linux and Mac.
+Run the project using `make`. Make is typically installed by default on Linux and Mac.
 
 ### Environment
 
