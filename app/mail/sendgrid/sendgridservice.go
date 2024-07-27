@@ -3,6 +3,7 @@ package sendgrid
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/jo-hoe/go-mail-service/app/mail"
 
@@ -47,7 +48,8 @@ func (service *SendGridService) createMessage(attributes mail.MailAttributes) *s
 	// populate `personalization` with data
 	emails := []*sgmail.Email{}
 
-	for _, mailAddress := range attributes.To {
+	mailAddresses := strings.Split(attributes.To, ",")
+	for _, mailAddress := range mailAddresses {
 		mail, _ := sgmail.ParseEmail(mailAddress)
 		emails = append(emails, mail)
 	}

@@ -29,7 +29,7 @@ func Test_sendMailHandler(t *testing.T) {
 		{
 			name: "handle basic mail",
 			args: args{
-				ctx: newContextWithBody(`{"to": ["test@example.com"], "subject": "Test Subject", "content": "Test Body"}`),
+				ctx: newContextWithBody(`{"to": "test@example.com,test2@example.com", "subject": "Test Subject", "content": "Test Body"}`),
 			},
 			wantErr: false,
 		},

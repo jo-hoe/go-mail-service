@@ -69,7 +69,7 @@ The service offers a basic API to send mails.
 One can specify the subject, content, and addressed to send to.
 
 ```bash
-curl -H "Content-Type: application/json" --data '{"subject":"my subject", "content":"my message", "to":["test@mail.de"]}' http://localhost:80/v1/sendmail
+curl -H "Content-Type: application/json" --data '{"subject":"my subject", "content":"my message", "to":"test@mail.com,test2@mail.com"}' http://localhost:80/v1/sendmail
 ```
 
 ## Linting
