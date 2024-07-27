@@ -1,6 +1,6 @@
 apiVersion: v2
 name: go-mail-service
-description: Go Service for sending emails
+description: Go service for sending emails
 
 # A chart can be either an 'application' or a 'library' chart.
 #
