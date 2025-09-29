@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/jo-hoe/go-mail-service/app/config"
-	"github.com/jo-hoe/go-mail-service/app/mail"
-	"github.com/jo-hoe/go-mail-service/app/mail/noop"
-	"github.com/jo-hoe/go-mail-service/app/mail/sendgrid"
-	"github.com/jo-hoe/go-mail-service/app/validation"
+	"github.com/jo-hoe/go-mail-service/internal/config"
+	"github.com/jo-hoe/go-mail-service/internal/mail"
+	"github.com/jo-hoe/go-mail-service/internal/mail/noop"
+	"github.com/jo-hoe/go-mail-service/internal/mail/sendgrid"
+	"github.com/jo-hoe/go-mail-service/internal/validation"
 
 	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
@@ -66,7 +66,7 @@ func sendMailHandler(ctx echo.Context) (err error) {
 		}
 	}
 	if strings.ToLower(isSendGridEnabled) == "true" {
-		err = sendWithSendGrid(ctx, *mailAttributes)	
+		err = sendWithSendGrid(ctx, *mailAttributes)
 		if err != nil {
 			return err
 		}

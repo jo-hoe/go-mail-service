@@ -1,8 +1,8 @@
 package sendgrid
 
 import (
-	"github.com/jo-hoe/go-mail-service/app/config"
-	"github.com/jo-hoe/go-mail-service/app/mail"
+	"github.com/jo-hoe/go-mail-service/internal/config"
+	"github.com/jo-hoe/go-mail-service/internal/mail"
 )
 
 // SendGridConfig contain all attributes to initialize the SendGrid mail service

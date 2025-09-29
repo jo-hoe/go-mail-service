@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/jo-hoe/go-mail-service/app/mail"
+	"github.com/jo-hoe/go-mail-service/internal/mail"
 )
 
 type NoopService struct{}

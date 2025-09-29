@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jo-hoe/go-mail-service/app/mail"
+	"github.com/jo-hoe/go-mail-service/internal/mail"
 
 	"github.com/sendgrid/sendgrid-go"
 	sgmail "github.com/sendgrid/sendgrid-go/helpers/mail"

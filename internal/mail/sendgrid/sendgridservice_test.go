@@ -1,8 +1,9 @@
 package sendgrid
 
 import (
-	"github.com/jo-hoe/go-mail-service/app/mail"
 	"testing"
+
+	"github.com/jo-hoe/go-mail-service/internal/mail"
 )
 
 func Test_Init(t *testing.T) {
