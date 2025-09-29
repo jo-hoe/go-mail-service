@@ -5,8 +5,54 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/jo-hoe/go-mail-service)](https://goreportcard.com/report/github.com/jo-hoe/go-mail-service)
 [![Coverage Status](https://coveralls.io/repos/github/jo-hoe/go-mail-service/badge.svg?branch=main)](https://coveralls.io/github/jo-hoe/go-mail-service?branch=main)
 
-A simple mail service that allow to send mails.
+A simple mail service that allows you to send mails.
 Currently only [Sendgrid](https://sendgrid.com/) is implemented.
+
+## Go Client Library
+
+A Go client library is available for easy integration with your Go applications:
+
+```bash
+go get github.com/jo-hoe/go-mail-service/pkg/client
+```
+
+### Quick Start with Client
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+
+    "github.com/jo-hoe/go-mail-service/pkg/client"
+)
+
+func main() {
+    // Create a new client
+    mailClient := client.NewClient("http://localhost:80")
+
+    // Create a mail request
+    request := client.MailRequest{
+        To:          "recipient@example.com",
+        Subject:     "Hello from Go Mail Service",
+        HtmlContent: "<h1>Hello!</h1><p>This is a test email.</p>",
+        From:        "sender@example.com",
+        FromName:    "Test Sender",
+    }
+
+    // Send the email
+    response, err := mailClient.SendMail(context.Background(), request)
+    if err != nil {
+        log.Fatalf("Failed to send email: %v", err)
+    }
+
+    fmt.Printf("Email sent successfully to: %s\n", response.To)
+}
+```
+
+For detailed documentation, see [pkg/client/README.md](pkg/client/README.md).
 
 ## Setup
 
