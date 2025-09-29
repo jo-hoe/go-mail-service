@@ -1,4 +1,4 @@
-FROM golang:1.24.3-alpine3.20 as build
+FROM golang:1.24.3-alpine3.20 AS build
 
 WORKDIR /go/src/app
 COPY . .
@@ -7,7 +7,7 @@ RUN go mod download
 RUN go vet -v ./... 
 RUN go test -v ./...
 
-RUN CGO_ENABLED=0 go build -o /go/bin/app
+RUN CGO_ENABLED=0 go build -o /go/bin/app ./internal/app
 # create empty folder to copy later into distoless image
 RUN mkdir /secrets
 
