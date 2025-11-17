@@ -63,16 +63,10 @@ func TestSendMail_Success(t *testing.T) {
 		}
 
 		// Send response
-		response := MailResponse{
-			To:          request.To,
-			Subject:     request.Subject,
-			HtmlContent: request.HtmlContent,
-			From:        request.From,
-			FromName:    request.FromName,
-		}
+		response := MailResponse(request)
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -144,7 +138,7 @@ func TestSendMail_HTTPError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		errorResp := map[string]string{"message": "Invalid request"}
-		json.NewEncoder(w).Encode(errorResp)
+		_ = json.NewEncoder(w).Encode(errorResp)
 	}))
 	defer server.Close()
 
