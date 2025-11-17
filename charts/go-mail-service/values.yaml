@@ -10,7 +10,7 @@ defaultSenderMailAddress: ""
 defaultSenderName: ""
 
 sendgridService:
-  enabled: true
+  enabled: false
   # -- api key for sendgrid
   apiKey: ""
   secretName: "sendgrid-secret"
