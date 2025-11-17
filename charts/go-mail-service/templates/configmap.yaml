@@ -9,6 +9,5 @@ data:
   defaultSenderMailAddress: "{{ .Values.defaultSenderMailAddress }}"
   defaultSenderName: "{{ .Values.defaultSenderName }}"
   isSendgridServiceEnabled: "{{ .Values.sendgridService.enabled }}"
+  isMailjetServiceEnabled: "{{ .Values.mailjetService.enabled }}"
   isNoopServiceEnabled: "{{ .Values.noopService.enabled }}"
-  
-

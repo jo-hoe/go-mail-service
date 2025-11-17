@@ -29,6 +29,14 @@ func Test_sendMailHandler(t *testing.T) {
 			t.Fatalf("Failed to unset environment variable: %v", err)
 		}
 	}()
+	if err := os.Setenv(IS_MAILJET_ENABLED_ENV_KEY, "false"); err != nil {
+		t.Fatalf("Failed to set environment variable: %v", err)
+	}
+	defer func() {
+		if err := os.Unsetenv(IS_MAILJET_ENABLED_ENV_KEY); err != nil {
+			t.Fatalf("Failed to unset environment variable: %v", err)
+		}
+	}()
 
 	type args struct {
 		ctx echo.Context

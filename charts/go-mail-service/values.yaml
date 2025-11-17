@@ -15,6 +15,14 @@ sendgridService:
   apiKey: ""
   secretName: "sendgrid-secret"
 
+mailjetService:
+  enabled: false
+  # -- API key public for Mailjet
+  apiKeyPublic: ""
+  # -- API key private for Mailjet
+  apiKeyPrivate: ""
+  secretName: "mailjet-secret"
+
 # -- noop service allows for debugging of apps
 # it will not send mail but log perform input validation
 # and log what received
