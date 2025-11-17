@@ -6,7 +6,9 @@
 [![Coverage Status](https://coveralls.io/repos/github/jo-hoe/go-mail-service/badge.svg?branch=main)](https://coveralls.io/github/jo-hoe/go-mail-service?branch=main)
 
 A simple mail service that allows you to send mails.
-Currently only [Sendgrid](https://sendgrid.com/) is implemented.
+Currently supports:
+- [SendGrid](https://sendgrid.com/)
+- [Mailjet](https://www.mailjet.com/)
 
 ## Go Client Library
 
@@ -79,16 +81,34 @@ Run the project using `make`. Make is typically installed by default on Linux an
 
 ### Environment
 
-Setup an .env file with the following content
+Setup an .env file with the following content.
+
+#### SendGrid Configuration
 
 ```.env
 API_PORT=80
 IS_SENDGRID_ENABLED=true
+IS_MAILJET_ENABLED=false
 IS_NOOP_ENABLED=false
 DEFAULT_FROM_ADDRESS=<email address>
 DEFAULT_FROM_NAME=<mail sender in clear text>
 SENDGRID_API_KEY=<sendgrid api key>
 ```
+
+#### Mailjet Configuration
+
+```.env
+API_PORT=80
+IS_SENDGRID_ENABLED=false
+IS_MAILJET_ENABLED=true
+IS_NOOP_ENABLED=false
+DEFAULT_FROM_ADDRESS=<email address>
+DEFAULT_FROM_NAME=<mail sender in clear text>
+MAILJET_API_KEY_PUBLIC=<mailjet public api key>
+MAILJET_API_KEY_PRIVATE=<mailjet private api key>
+```
+
+**Note:** Only one mail service should be enabled at a time. The service priority is: Noop → Mailjet → SendGrid.
 
 ## Run
 

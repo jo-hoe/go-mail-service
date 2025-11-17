@@ -76,12 +76,29 @@ spec:
                 configMapKeyRef:
                   name: {{ include "go-mail-service.fullname" . }}-config
                   key: isSendgridServiceEnabled
+            - name: IS_MAILJET_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "go-mail-service.fullname" . }}-config
+                  key: isMailjetServiceEnabled
             {{- if .Values.sendgridService.enabled }}
             - name: SENDGRID_API_KEY
               valueFrom:
                 secretKeyRef:
                   name: "{{ .Values.sendgridService.secretName }}"
                   key: sendgridApiKey
+            {{- end }}
+            {{- if .Values.mailjetService.enabled }}
+            - name: MAILJET_API_KEY_PUBLIC
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.mailjetService.secretName }}"
+                  key: mailjetApiKeyPublic
+            - name: MAILJET_API_KEY_PRIVATE
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.mailjetService.secretName }}"
+                  key: mailjetApiKeyPrivate
             {{- end }}
       {{- with .Values.volumes }}
       volumes:
