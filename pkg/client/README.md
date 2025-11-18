@@ -190,9 +190,244 @@ Common HTTP status codes:
 
 The code examples above demonstrate the main usage patterns for the client library.
 
+## Mock Server for Testing
+
+The client library includes a mock mail server (`MockMailServer`) that can be used for testing your application without connecting to a real mail service. This is particularly useful for unit tests and integration tests.
+
+### Creating a Mock Server
+
+```go
+import (
+    "context"
+    "testing"
+    "github.com/jo-hoe/go-mail-service/pkg/client"
+)
+
+func TestMyEmailFeature(t *testing.T) {
+    // Create and start the mock server
+    mockServer := client.NewMockMailServer()
+    defer mockServer.Close()
+
+    // Create a client pointing to the mock server
+    mailClient := client.NewClient(mockServer.URL())
+
+    // Your test code here...
+}
+```
+
+### Mock Server Features
+
+The mock server provides several useful features for testing:
+
+#### Recording Sent Emails
+
+All emails sent to the mock server are recorded and can be retrieved for verification:
+
+```go
+mockServer := client.NewMockMailServer()
+defer mockServer.Close()
+
+mailClient := client.NewClient(mockServer.URL())
+
+// Send an email
+request := client.MailRequest{
+    To:          "test@example.com",
+    Subject:     "Test Email",
+    HtmlContent: "<p>Test content</p>",
+}
+mailClient.SendMail(context.Background(), request)
+
+// Verify the email was sent
+sentMails := mockServer.GetSentMails()
+if len(sentMails) != 1 {
+    t.Errorf("Expected 1 email, got %d", len(sentMails))
+}
+
+// Check email details
+if sentMails[0].To != "test@example.com" {
+    t.Errorf("Unexpected recipient: %s", sentMails[0].To)
+}
+```
+
+#### Getting the Last Sent Email
+
+Convenient method to retrieve just the most recent email:
+
+```go
+// Send multiple emails
+mailClient.SendMail(context.Background(), request1)
+mailClient.SendMail(context.Background(), request2)
+
+// Get only the last one
+lastMail := mockServer.GetLastSentMail()
+if lastMail != nil {
+    fmt.Printf("Last email was to: %s\n", lastMail.To)
+}
+```
+
+#### Counting Sent Emails
+
+```go
+count := mockServer.SentMailCount()
+fmt.Printf("Total emails sent: %d\n", count)
+```
+
+#### Simulating Error Responses
+
+Configure the mock server to return specific error responses:
+
+```go
+mockServer := client.NewMockMailServer()
+defer mockServer.Close()
+
+// Simulate a service error
+mockServer.SetSendMailStatus(http.StatusServiceUnavailable, "Service temporarily unavailable")
+
+mailClient := client.NewClient(mockServer.URL())
+
+// This will now return an error
+_, err := mailClient.SendMail(context.Background(), request)
+if err != nil {
+    errorResp, ok := err.(client.ErrorResponse)
+    if ok {
+        fmt.Printf("Got expected error: %s\n", errorResp.Message)
+    }
+}
+```
+
+#### Simulating Health Check Failures
+
+```go
+mockServer := client.NewMockMailServer()
+defer mockServer.Close()
+
+// Simulate unhealthy service
+mockServer.SetHealthStatus(http.StatusServiceUnavailable)
+
+mailClient := client.NewClient(mockServer.URL())
+
+err := mailClient.HealthCheck(context.Background())
+if err != nil {
+    fmt.Println("Health check failed as expected")
+}
+```
+
+#### Resetting the Mock Server
+
+Clear all recorded emails and reset status codes:
+
+```go
+mockServer := client.NewMockMailServer()
+defer mockServer.Close()
+
+// Send some emails...
+mailClient.SendMail(context.Background(), request)
+
+// Reset everything
+mockServer.Reset()
+
+// Now the server has no recorded emails and default status codes
+if mockServer.SentMailCount() != 0 {
+    t.Error("Expected no emails after reset")
+}
+```
+
+### Complete Testing Example
+
+```go
+func TestEmailNotification(t *testing.T) {
+    // Setup mock server
+    mockServer := client.NewMockMailServer()
+    defer mockServer.Close()
+
+    // Create your application's email sender with the mock client
+    mailClient := client.NewClient(mockServer.URL())
+    
+    // Test your business logic that sends emails
+    err := sendWelcomeEmail(mailClient, "newuser@example.com")
+    if err != nil {
+        t.Fatalf("Failed to send welcome email: %v", err)
+    }
+
+    // Verify the email was sent correctly
+    sentMails := mockServer.GetSentMails()
+    if len(sentMails) != 1 {
+        t.Fatalf("Expected 1 email, got %d", len(sentMails))
+    }
+
+    email := sentMails[0]
+    if email.To != "newuser@example.com" {
+        t.Errorf("Wrong recipient: %s", email.To)
+    }
+    if email.Subject != "Welcome to Our Service" {
+        t.Errorf("Wrong subject: %s", email.Subject)
+    }
+    if !strings.Contains(email.HtmlContent, "Welcome") {
+        t.Error("Email content doesn't contain welcome message")
+    }
+}
+
+func TestEmailErrorHandling(t *testing.T) {
+    mockServer := client.NewMockMailServer()
+    defer mockServer.Close()
+
+    // Simulate service failure
+    mockServer.SetSendMailStatus(http.StatusInternalServerError, "Database error")
+
+    mailClient := client.NewClient(mockServer.URL())
+    
+    // Your code should handle this error gracefully
+    err := sendWelcomeEmail(mailClient, "user@example.com")
+    if err == nil {
+        t.Error("Expected error when service is down")
+    }
+
+    // Verify error was properly propagated
+    if errorResp, ok := err.(client.ErrorResponse); ok {
+        if errorResp.Code != http.StatusInternalServerError {
+            t.Errorf("Wrong error code: %d", errorResp.Code)
+        }
+    }
+}
+```
+
+### Thread Safety
+
+The mock server is thread-safe and can handle concurrent requests, making it suitable for testing concurrent email operations:
+
+```go
+func TestConcurrentEmails(t *testing.T) {
+    mockServer := client.NewMockMailServer()
+    defer mockServer.Close()
+
+    mailClient := client.NewClient(mockServer.URL())
+
+    // Send emails concurrently
+    var wg sync.WaitGroup
+    for i := 0; i < 10; i++ {
+        wg.Add(1)
+        go func(id int) {
+            defer wg.Done()
+            request := client.MailRequest{
+                To:          fmt.Sprintf("user%d@example.com", id),
+                Subject:     "Test",
+                HtmlContent: "Content",
+            }
+            mailClient.SendMail(context.Background(), request)
+        }(i)
+    }
+    wg.Wait()
+
+    // All 10 emails should be recorded
+    if mockServer.SentMailCount() != 10 {
+        t.Errorf("Expected 10 emails, got %d", mockServer.SentMailCount())
+    }
+}
+```
+
 ## Testing
 
-Run the client tests:
+Run the client tests (including mock server tests):
 
 ```bash
 go test ./pkg/client/...
@@ -202,6 +437,12 @@ Run with verbose output:
 
 ```bash
 go test -v ./pkg/client/...
+```
+
+Run with coverage:
+
+```bash
+go test -cover ./pkg/client/...
 ```
 
 ## License
