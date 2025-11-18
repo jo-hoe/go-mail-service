@@ -190,13 +190,6 @@ Common HTTP status codes:
 
 The code examples above demonstrate the main usage patterns for the client library.
 
-## Configuration
-
-The mail service itself can be configured with environment variables:
-- `API_PORT`: Port number for the service (default: 80)
-- `IS_NOOP_ENABLED`: Enable no-op mode for testing (default: true)
-- `IS_SENDGRID_ENABLED`: Enable SendGrid integration (default: false)
-
 ## Testing
 
 Run the client tests:
