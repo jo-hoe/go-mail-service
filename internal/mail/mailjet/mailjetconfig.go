@@ -35,12 +35,12 @@ func createConfig(mailAttributes mail.MailAttributes) (*MailjetConfig, error) {
 		return nil, err
 	}
 
-	fromAddress, err := getField(mailAttributes.From, defaultAddressEnvKey)
+	fromAddress, err := mail.GetFieldOrDefault(mailAttributes.From, defaultAddressEnvKey)
 	if err != nil {
 		return nil, err
 	}
 
-	fromName, err := getField(mailAttributes.FromName, defaultNameEnvKey)
+	fromName, err := mail.GetFieldOrDefault(mailAttributes.FromName, defaultNameEnvKey)
 	if err != nil {
 		return nil, err
 	}
@@ -51,18 +51,4 @@ func createConfig(mailAttributes mail.MailAttributes) (*MailjetConfig, error) {
 		OriginAddress: fromAddress,
 		OriginName:    fromName,
 	}, nil
-}
-
-func getField(userInput string, defaultEnvKey string) (result string, err error) {
-	envService := config.NewEnvService()
-	fromAddress := ""
-	if userInput != "" {
-		fromAddress = userInput
-	} else {
-		fromAddress, err = envService.Get(defaultEnvKey)
-		if err != nil {
-			return "", err
-		}
-	}
-	return fromAddress, nil
 }

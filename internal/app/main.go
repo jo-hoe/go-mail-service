@@ -139,8 +139,8 @@ func checkMultipleProviders(ctx echo.Context, flags *providerFlags) {
 
 type mailSender func(echo.Context, mail.MailAttributes) error
 
-func sendMailWithProvider(ctx echo.Context, mailAttributes mail.MailAttributes, providerName string, sender mailSender) error {
-	ctx.Logger().Infof("using %s provider", providerName)
+func sendMailWithProvider(ctx echo.Context, mailAttributes mail.MailAttributes, providerName string, priority string, sender mailSender) error {
+	ctx.Logger().Infof("using %s provider (priority: %s)", providerName, priority)
 	
 	if err := sender(ctx, mailAttributes); err != nil {
 		ctx.Logger().Errorf("%s provider failed: %v", strings.ToLower(providerName), err)
@@ -156,32 +156,22 @@ func sendMailWithProvider(ctx echo.Context, mailAttributes mail.MailAttributes, 
 	return ctx.JSON(http.StatusOK, mailAttributes)
 }
 
-func sendWithMailjet(ctx echo.Context, mailAttributes mail.MailAttributes) (err error) {
+func sendWithMailjet(ctx echo.Context, mailAttributes mail.MailAttributes) error {
 	mailjetConfig, err := mailjet.NewMailjetConfig(mailAttributes)
 	if err != nil {
 		return err
 	}
 	mailService := mailjet.NewMailjetService(mailjetConfig)
-
-	if err = mailService.SendMail(ctx.Request().Context(), mailAttributes); err != nil {
-		return err
-	}
-
-	return nil
+	return mailService.SendMail(ctx.Request().Context(), mailAttributes)
 }
 
-func sendWithSendGrid(ctx echo.Context, mailAttributes mail.MailAttributes) (err error) {
+func sendWithSendGrid(ctx echo.Context, mailAttributes mail.MailAttributes) error {
 	sendgridConfig, err := sendgrid.NewSendGridConfig(mailAttributes)
 	if err != nil {
 		return err
 	}
 	mailService := sendgrid.NewSendGridService(sendgridConfig)
-
-	if err = mailService.SendMail(ctx.Request().Context(), mailAttributes); err != nil {
-		return err
-	}
-
-	return nil
+	return mailService.SendMail(ctx.Request().Context(), mailAttributes)
 }
 
 func probeHandler(ctx echo.Context) (err error) {
