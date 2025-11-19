@@ -75,6 +75,7 @@ git config core.hooksPath scripts/git-hooks
 ```
 
 **Active Hooks:**
+
 - **pre-commit**: Automatically runs `go fmt ./...` before each commit to ensure consistent code formatting
 
 ### Prerequisites
