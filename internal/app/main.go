@@ -139,8 +139,8 @@ func checkMultipleProviders(ctx echo.Context, flags *providerFlags) {
 
 type mailSender func(echo.Context, mail.MailAttributes) error
 
-func sendMailWithProvider(ctx echo.Context, mailAttributes mail.MailAttributes, providerName string, priority string, sender mailSender) error {
-	ctx.Logger().Infof("using %s provider (priority: %s)", providerName, priority)
+func sendMailWithProvider(ctx echo.Context, mailAttributes mail.MailAttributes, providerName string, sender mailSender) error {
+	ctx.Logger().Infof("using %s provider", providerName)
 	
 	if err := sender(ctx, mailAttributes); err != nil {
 		ctx.Logger().Errorf("%s provider failed: %v", strings.ToLower(providerName), err)
