@@ -88,6 +88,7 @@ func (c *Client) SendMail(ctx context.Context, request MailRequest) (*MailRespon
 	if request.HtmlContent == "" {
 		return nil, fmt.Errorf("'content' field is required")
 	}
+	// Note: From and FromName are optional - the service will use defaults if not provided
 
 	// Prepare request body
 	jsonData, err := json.Marshal(request)

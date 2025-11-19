@@ -87,8 +87,8 @@ Sends an email using the mail service.
 - `To` (required): Recipient email address(es), comma-separated for multiple recipients
 - `Subject` (required): Email subject line
 - `HtmlContent` (required): Email body content in HTML format
-- `From` (optional): Sender email address
-- `FromName` (optional): Display name for the sender
+- `From` (optional): Sender email address. If not provided, the service will use the default sender address configured in the `DEFAULT_FROM_ADDRESS` environment variable
+- `FromName` (optional): Display name for the sender. If not provided, the service will use the default sender name configured in the `DEFAULT_FROM_NAME` environment variable
 
 ```go
 request := client.MailRequest{
@@ -129,6 +129,27 @@ if err != nil {
 ```
 
 ## Advanced Usage
+
+### Using Default Sender Information
+
+You can omit the `From` and `FromName` fields, and the service will use the configured defaults:
+
+```go
+request := client.MailRequest{
+    To:          "user@example.com",
+    Subject:     "Test Email",
+    HtmlContent: "<p>Hello World!</p>",
+    // From and FromName are optional - service will use defaults
+}
+
+response, err := mailClient.SendMail(context.Background(), request)
+if err != nil {
+    log.Fatalf("Failed to send email: %v", err)
+}
+
+// The response will include the default From and FromName values
+fmt.Printf("Email sent from: %s (%s)\n", response.From, response.FromName)
+```
 
 ### Multiple Recipients
 

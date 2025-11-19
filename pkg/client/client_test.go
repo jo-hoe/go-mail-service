@@ -133,6 +133,63 @@ func TestSendMail_ValidationErrors(t *testing.T) {
 	}
 }
 
+func TestSendMail_OptionalFromFields(t *testing.T) {
+	// Create a test server that accepts requests without From/FromName
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Parse request body
+		var request MailRequest
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			t.Errorf("Failed to decode request body: %v", err)
+		}
+
+		// Verify that From and FromName are optional (can be empty)
+		// The service will use defaults if not provided
+		if request.To != "test@example.com" {
+			t.Errorf("Expected To: test@example.com, got %s", request.To)
+		}
+
+		// Send response with service defaults
+		response := MailResponse{
+			To:          request.To,
+			Subject:     request.Subject,
+			HtmlContent: request.HtmlContent,
+			From:        "default@example.com",  // Service would populate this from env
+			FromName:    "Default Sender",       // Service would populate this from env
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	// Create client
+	client := NewClient(server.URL)
+
+	// Test request without From and FromName
+	request := MailRequest{
+		To:          "test@example.com",
+		Subject:     "Test Subject",
+		HtmlContent: "Test Body",
+		// From and FromName intentionally omitted
+	}
+
+	response, err := client.SendMail(context.Background(), request)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+
+	if response.To != request.To {
+		t.Errorf("Expected To: %s, got %s", request.To, response.To)
+	}
+	// Verify that the service returned defaults
+	if response.From == "" {
+		t.Errorf("Expected service to return default From address")
+	}
+	if response.FromName == "" {
+		t.Errorf("Expected service to return default FromName")
+	}
+}
+
 func TestSendMail_HTTPError(t *testing.T) {
 	// Create a test server that returns an error
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
