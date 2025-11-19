@@ -121,7 +121,7 @@ MAILJET_API_KEY_PRIVATE=<mailjet private api key>
 
 ### Docker
 
-For plain docker run to the following commands
+For plain docker run the following commands:
 
 ```bash
 docker build . -t go-mail-service

@@ -43,9 +43,10 @@ stop-k3d: ## stop K3d
 .PHONY: restart-k3d
 restart-k3d: stop-k3d start-k3d # restart the cluster
 
-.PHONY: start
-start: ## rebuild and start via docker
-	@docker compose up --build
+.PHONY: start-docker
+start-docker: ## build and start via plain docker with .env file
+	@docker build -f ${ROOT_DIR}Dockerfile . -t ${IMAGE_NAME}
+	@docker run --rm -p $(API_PORT):$(API_PORT) --env-file .env ${IMAGE_NAME}
 
 .PHONY: generate-helm-docs
 generate-helm-docs: ## generates helm docu in /helm folder 
