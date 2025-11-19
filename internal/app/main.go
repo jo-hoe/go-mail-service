@@ -89,17 +89,17 @@ type providerFlags struct {
 
 func getProviderFlags() (*providerFlags, error) {
 	envService := config.NewEnvService()
-	
+
 	isMailjetEnabled, err := getEnvAsBool(envService, IS_MAILJET_ENABLED_ENV_KEY)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	isSendGridEnabled, err := getEnvAsBool(envService, IS_SENDGRID_ENABLED_ENV_KEY)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	isNoopEnabled, err := getEnvAsBool(envService, IS_NOOP_ENABLED_ENV_KEY)
 	if err != nil {
 		return nil, err
@@ -131,7 +131,7 @@ func checkMultipleProviders(ctx echo.Context, flags *providerFlags) {
 	if flags.isNoopEnabled {
 		enabledCount++
 	}
-	
+
 	if enabledCount > 1 {
 		ctx.Logger().Warnf("multiple mail providers are enabled (%d) - only one will be used based on priority: Mailjet → SendGrid → Noop", enabledCount)
 	}
@@ -141,18 +141,18 @@ type mailSender func(echo.Context, mail.MailAttributes) error
 
 func sendMailWithProvider(ctx echo.Context, mailAttributes mail.MailAttributes, providerName string, priority string, sender mailSender) error {
 	ctx.Logger().Infof("using %s provider (priority: %s)", providerName, priority)
-	
+
 	if err := sender(ctx, mailAttributes); err != nil {
 		ctx.Logger().Errorf("%s provider failed: %v", strings.ToLower(providerName), err)
 		return err
 	}
-	
+
 	successMsg := fmt.Sprintf("mail successfully sent via %s provider", providerName)
 	if providerName == "Noop" {
 		successMsg = fmt.Sprintf("mail successfully processed by %s provider", providerName)
 	}
 	ctx.Logger().Info(successMsg)
-	
+
 	return ctx.JSON(http.StatusOK, mailAttributes)
 }
 

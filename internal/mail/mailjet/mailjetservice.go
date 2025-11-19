@@ -30,11 +30,11 @@ func NewMailjetService(config *MailjetConfig) *MailjetService {
 
 // mailjetMessage represents a single message in Mailjet's API format
 type mailjetMessage struct {
-	From        mailjetEmail   `json:"From"`
-	To          []mailjetEmail `json:"To"`
-	Subject     string         `json:"Subject"`
-	TextPart    string         `json:"TextPart,omitempty"`
-	HTMLPart    string         `json:"HTMLPart,omitempty"`
+	From     mailjetEmail   `json:"From"`
+	To       []mailjetEmail `json:"To"`
+	Subject  string         `json:"Subject"`
+	TextPart string         `json:"TextPart,omitempty"`
+	HTMLPart string         `json:"HTMLPart,omitempty"`
 }
 
 // mailjetEmail represents an email address with optional name
@@ -55,9 +55,9 @@ type mailjetResponse struct {
 
 // mailjetMessageResponse represents a single message response
 type mailjetMessageResponse struct {
-	Status string                  `json:"Status"`
+	Status string                     `json:"Status"`
 	To     []mailjetRecipientResponse `json:"To,omitempty"`
-	Errors []mailjetError          `json:"Errors,omitempty"`
+	Errors []mailjetError             `json:"Errors,omitempty"`
 }
 
 // mailjetRecipientResponse represents recipient info in response
@@ -79,15 +79,15 @@ type mailjetError struct {
 
 func (service *MailjetService) SendMail(ctx context.Context, attributes mail.MailAttributes) error {
 	log.Printf("mailjet: preparing to send mail")
-	
+
 	message := service.createMessage(attributes)
 	err := service.sendRequest(ctx, message)
-	
+
 	if err != nil {
 		log.Printf("mailjet: failed to send mail: %v", err)
 		return err
 	}
-	
+
 	log.Printf("mailjet: mail sent successfully")
 	return nil
 }
@@ -140,13 +140,13 @@ func (service *MailjetService) sendRequest(ctx context.Context, message mailjetM
 
 	// Set headers
 	req.Header.Set("Content-Type", "application/json")
-	
+
 	// Set Basic Authentication
 	auth := base64.StdEncoding.EncodeToString([]byte(service.config.APIKeyPublic + ":" + service.config.APIKeyPrivate))
 	req.Header.Set("Authorization", "Basic "+auth)
 
 	log.Printf("mailjet: sending request to Mailjet API")
-	
+
 	// Send request
 	resp, err := service.client.Do(req)
 	if err != nil {
@@ -183,19 +183,19 @@ func (service *MailjetService) sendRequest(ctx context.Context, message mailjetM
 	if len(mailjetResp.Messages) > 0 {
 		msg := mailjetResp.Messages[0]
 		log.Printf("mailjet: response status: %s", msg.Status)
-		
+
 		// Log recipient count and message IDs if available
 		if len(msg.To) > 0 {
 			log.Printf("mailjet: message sent to %d recipient(s)", len(msg.To))
 			for _, recipient := range msg.To {
-				log.Printf("mailjet: message ID: %d, message UUID: %s", 
+				log.Printf("mailjet: message ID: %d, message UUID: %s",
 					recipient.MessageID, recipient.MessageUUID)
 			}
 		}
-		
+
 		if msg.Status == "error" && len(msg.Errors) > 0 {
 			firstError := msg.Errors[0]
-			log.Printf("mailjet: error [%s] (code: %s): %s", 
+			log.Printf("mailjet: error [%s] (code: %s): %s",
 				firstError.ErrorIdentifier, firstError.ErrorCode, firstError.ErrorMessage)
 			return fmt.Errorf("mailjet error [%s]: %s", firstError.ErrorCode, firstError.ErrorMessage)
 		}

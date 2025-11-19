@@ -28,15 +28,15 @@ func NewSendGridService(config *SendGridConfig) *SendGridService {
 
 func (service *SendGridService) SendMail(ctx context.Context, attributes mail.MailAttributes) error {
 	log.Printf("sendgrid: preparing to send mail")
-	
+
 	message := service.createMessage(attributes)
 	err := service.sendRequest(ctx, message)
-	
+
 	if err != nil {
 		log.Printf("sendgrid: failed to send mail: %v", err)
 		return err
 	}
-	
+
 	log.Printf("sendgrid: mail sent successfully")
 	return nil
 }
@@ -81,7 +81,7 @@ func (service *SendGridService) sendRequest(ctx context.Context, mailObject *sgm
 
 	request.Method = "POST"
 	request.Body = sgmail.GetRequestBody(mailObject)
-	
+
 	log.Printf("sendgrid: sending request to SendGrid API")
 	result, err := sendgrid.MakeRequestWithContext(ctx, request)
 
@@ -91,7 +91,7 @@ func (service *SendGridService) sendRequest(ctx context.Context, mailObject *sgm
 	}
 
 	log.Printf("sendgrid: received response - status code: %d", result.StatusCode)
-	
+
 	if result.StatusCode != 202 {
 		log.Printf("sendgrid: API error - status code: %d, body: %s", result.StatusCode, result.Body)
 		return fmt.Errorf("SendGrid could not send mail. [%d]: %s", result.StatusCode, result.Body)

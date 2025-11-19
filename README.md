@@ -59,6 +59,24 @@ For detailed documentation, see [pkg/client/README.md](pkg/client/README.md).
 
 ## Setup
 
+### Git Hooks
+
+This project uses git hooks to ensure code quality. After cloning the repository, run the setup script to configure the hooks:
+
+```bash
+# On Linux/Mac
+sh scripts/setup-hooks.sh
+
+# On Windows (Git Bash)
+sh scripts/setup-hooks.sh
+
+# Or manually configure
+git config core.hooksPath scripts/git-hooks
+```
+
+**Active Hooks:**
+- **pre-commit**: Automatically runs `go fmt ./...` before each commit to ensure consistent code formatting
+
 ### Prerequisites
 
 - [Golang](https://go.dev/doc/install)

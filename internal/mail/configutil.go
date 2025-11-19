@@ -9,12 +9,12 @@ func GetFieldOrDefault(userInput string, defaultEnvKey string) (string, error) {
 	if userInput != "" {
 		return userInput, nil
 	}
-	
+
 	envService := config.NewEnvService()
 	value, err := envService.Get(defaultEnvKey)
 	if err != nil {
 		return "", err
 	}
-	
+
 	return value, nil
 }
