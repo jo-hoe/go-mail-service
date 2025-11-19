@@ -7,6 +7,7 @@
 
 A simple mail service that allows you to send mails.
 Currently supports:
+
 - [SendGrid](https://sendgrid.com/)
 - [Mailjet](https://www.mailjet.com/)
 
@@ -81,7 +82,13 @@ Run the project using `make`. Make is typically installed by default on Linux an
 
 ### Environment
 
-Setup an .env file with the following content.
+Create a `.env` file by copying the example file:
+
+```bash
+cp .env.example .env
+```
+
+Then edit the `.env` file with your actual configuration values.
 
 #### SendGrid Configuration
 
