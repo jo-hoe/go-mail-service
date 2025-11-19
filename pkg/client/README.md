@@ -5,8 +5,10 @@ A simple Go client library for interacting with the Go Mail Service API.
 ## Installation
 
 ```bash
-go get github.com/jo-hoe/go-mail-service/pkg/client
+go get github.com/jo-hoe/go-mail-service/pkg/client@latest
 ```
+
+**Note:** The client library is a separate Go module with zero external dependencies. It only uses Go's standard library, so you won't inherit any unnecessary dependencies from the mail service implementation (like SendGrid, Echo framework, or validators).
 
 ## Quick Start
 
