@@ -83,6 +83,7 @@ Sets a custom HTTP client for making requests.
 Sends an email using the mail service.
 
 **MailRequest fields:**
+
 - `To` (required): Recipient email address(es), comma-separated for multiple recipients
 - `Subject` (required): Email subject line
 - `HtmlContent` (required): Email body content in HTML format
@@ -185,6 +186,7 @@ type ErrorResponse struct {
 ```
 
 Common HTTP status codes:
+
 - `400 Bad Request`: Invalid request data (missing required fields, invalid email format, etc.)
 - `500 Internal Server Error`: Server-side error
 
