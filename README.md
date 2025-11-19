@@ -115,7 +115,24 @@ MAILJET_API_KEY_PUBLIC=<mailjet public api key>
 MAILJET_API_KEY_PRIVATE=<mailjet private api key>
 ```
 
-**Note:** Only one mail service should be enabled at a time. The service priority is: Noop → Mailjet → SendGrid.
+**Note:** Only one mail service should be enabled at a time. The service priority is: Mailjet → SendGrid → Noop.
+
+#### Noop Configuration (Development/Testing Only)
+
+```.env
+API_PORT=80
+IS_SENDGRID_ENABLED=false
+IS_MAILJET_ENABLED=false
+IS_NOOP_ENABLED=true
+```
+
+**⚠️ WARNING:** The Noop service is for **development and testing purposes only**. It logs all mail details including:
+
+- Email addresses (to/from)
+- Mail subjects
+- Mail content
+
+**DO NOT use the Noop service in production environments** as it will log personal data. Use SendGrid or Mailjet in production, which are configured to not log personal information.
 
 ## Run
 

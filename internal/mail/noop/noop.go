@@ -14,6 +14,9 @@ func NewNoopService() *NoopService {
 }
 
 func (service *NoopService) SendMail(ctx context.Context, attributes mail.MailAttributes) error {
-	log.Printf("Noop service received mail request: %+v", attributes)
+	log.Printf("noop: preparing to send mail - to: %s, subject: %s", attributes.To, attributes.Subject)
+	log.Printf("noop: mail details - from: %s (%s), html content length: %d bytes", 
+		attributes.From, attributes.FromName, len(attributes.HtmlContent))
+	log.Printf("noop: mail processed (no actual sending - noop mode)")
 	return nil
 }

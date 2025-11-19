@@ -82,13 +82,7 @@ func NewMockMailServer() *MockMailServer {
 		}
 
 		// Return the mail request as response
-		response := MailResponse{
-			To:          request.To,
-			Subject:     request.Subject,
-			HtmlContent: request.HtmlContent,
-			From:        request.From,
-			FromName:    request.FromName,
-		}
+		response := MailResponse(request)
 		_ = json.NewEncoder(w).Encode(response)
 	})
 

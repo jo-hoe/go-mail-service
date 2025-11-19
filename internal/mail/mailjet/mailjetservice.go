@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 
@@ -77,8 +78,18 @@ type mailjetError struct {
 }
 
 func (service *MailjetService) SendMail(ctx context.Context, attributes mail.MailAttributes) error {
+	log.Printf("mailjet: preparing to send mail")
+	
 	message := service.createMessage(attributes)
-	return service.sendRequest(ctx, message)
+	err := service.sendRequest(ctx, message)
+	
+	if err != nil {
+		log.Printf("mailjet: failed to send mail: %v", err)
+		return err
+	}
+	
+	log.Printf("mailjet: mail sent successfully")
+	return nil
 }
 
 // createMessage creates a Mailjet message from mail attributes
@@ -116,12 +127,14 @@ func (service *MailjetService) sendRequest(ctx context.Context, message mailjetM
 
 	jsonData, err := json.Marshal(payload)
 	if err != nil {
+		log.Printf("mailjet: failed to marshal JSON: %v", err)
 		return fmt.Errorf("failed to marshal JSON: %w", err)
 	}
 
 	// Create HTTP request
 	req, err := http.NewRequestWithContext(ctx, "POST", "https://api.mailjet.com/v3.1/send", bytes.NewBuffer(jsonData))
 	if err != nil {
+		log.Printf("mailjet: failed to create request: %v", err)
 		return fmt.Errorf("failed to create request: %w", err)
 	}
 
@@ -132,9 +145,12 @@ func (service *MailjetService) sendRequest(ctx context.Context, message mailjetM
 	auth := base64.StdEncoding.EncodeToString([]byte(service.config.APIKeyPublic + ":" + service.config.APIKeyPrivate))
 	req.Header.Set("Authorization", "Basic "+auth)
 
+	log.Printf("mailjet: sending request to Mailjet API")
+	
 	// Send request
 	resp, err := service.client.Do(req)
 	if err != nil {
+		log.Printf("mailjet: request error: %v", err)
 		return fmt.Errorf("failed to send request: %w", err)
 	}
 	defer func() {
@@ -144,25 +160,43 @@ func (service *MailjetService) sendRequest(ctx context.Context, message mailjetM
 	// Read response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
+		log.Printf("mailjet: failed to read response body: %v", err)
 		return fmt.Errorf("failed to read response body: %w", err)
 	}
 
+	log.Printf("mailjet: received response - status code: %d", resp.StatusCode)
+
 	// Check status code
 	if resp.StatusCode != http.StatusOK {
+		log.Printf("mailjet: API error - status code: %d, body: %s", resp.StatusCode, string(body))
 		return fmt.Errorf("mailjet API returned status %d: %s", resp.StatusCode, string(body))
 	}
 
 	// Parse response
 	var mailjetResp mailjetResponse
 	if err := json.Unmarshal(body, &mailjetResp); err != nil {
+		log.Printf("mailjet: failed to parse response: %v", err)
 		return fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	// Check for errors in response
 	if len(mailjetResp.Messages) > 0 {
 		msg := mailjetResp.Messages[0]
+		log.Printf("mailjet: response status: %s", msg.Status)
+		
+		// Log recipient count and message IDs if available
+		if len(msg.To) > 0 {
+			log.Printf("mailjet: message sent to %d recipient(s)", len(msg.To))
+			for _, recipient := range msg.To {
+				log.Printf("mailjet: message ID: %d, message UUID: %s", 
+					recipient.MessageID, recipient.MessageUUID)
+			}
+		}
+		
 		if msg.Status == "error" && len(msg.Errors) > 0 {
 			firstError := msg.Errors[0]
+			log.Printf("mailjet: error [%s] (code: %s): %s", 
+				firstError.ErrorIdentifier, firstError.ErrorCode, firstError.ErrorMessage)
 			return fmt.Errorf("mailjet error [%s]: %s", firstError.ErrorCode, firstError.ErrorMessage)
 		}
 	}
