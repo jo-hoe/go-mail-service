@@ -20,7 +20,7 @@ on:
     branch:
       - main
     paths:
-      - 'charts/**'
+      - 'charts/go-mail-service/Chart.yaml'
 
 jobs:
   release:
@@ -46,4 +46,5 @@ jobs:
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.7.0
         env:
+
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
