@@ -25,7 +25,7 @@ const IS_MAILJET_ENABLED_ENV_KEY = "IS_MAILJET_ENABLED"
 func main() {
 	e := echo.New()
 
-	e.Use(middleware.Logger())
+	e.Use(middleware.RequestLogger())
 	e.Use(middleware.Recover())
 	e.Validator = &validation.GenericValidator{Validator: validator.New()}
 

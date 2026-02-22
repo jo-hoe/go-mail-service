@@ -13,8 +13,8 @@ type MailjetConfig struct {
 	OriginName    string
 }
 
-const apiKeyPublicEnvKey = "MAILJET_API_KEY_PUBLIC"
-const apiKeyPrivateEnvKey = "MAILJET_API_KEY_PRIVATE"
+const apiKeyPublicEnvKey = "MAILJET_API_KEY_PUBLIC"   // #nosec G101 -- environment variable name, not a credential
+const apiKeyPrivateEnvKey = "MAILJET_API_KEY_PRIVATE" // #nosec G101 -- environment variable name, not a credential
 const defaultAddressEnvKey = "DEFAULT_FROM_ADDRESS"
 const defaultNameEnvKey = "DEFAULT_FROM_NAME"
 
