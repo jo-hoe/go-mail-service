@@ -11,6 +11,15 @@ IMAGE_VERSION := 1.3.1
 
 .DEFAULT_GOAL := start
 
+.PHONY: update
+update: ## update dependencies
+	@git pull origin main
+	@go mod tidy
+
+.PHONY: lint
+lint: ## run linters
+	golangci-lint run -E dupl -E gocyclo -E gosec -E misspell
+
 .PHONY: start-cluster
 start-cluster:
 	@k3d cluster create --config ${ROOT_DIR}k3d/mailcluster.yaml

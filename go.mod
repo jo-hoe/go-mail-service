@@ -1,6 +1,6 @@
 module github.com/jo-hoe/go-mail-service
 
-go 1.24.1
+go 1.26.0
 
 require (
 	github.com/go-playground/validator v9.31.0+incompatible
