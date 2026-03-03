@@ -2,6 +2,10 @@ apiVersion: k3d.io/v1alpha5
 kind: Simple
 metadata:
   name: mailcluster # (will still be prefixed with `k3d-`)
+kubeAPI:
+  # Explicitly set hostIP/hostPort for Windows to ensure kubectl connectivity
+  hostIP: "127.0.0.1"
+  hostPort: "6550"
 servers: 1
 agents: 1 
 ports:

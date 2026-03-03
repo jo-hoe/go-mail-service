@@ -6,8 +6,10 @@ export
 
 # get root dir
 ROOT_DIR := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
+LOCAL_REGISTRY := localhost:5000
+LOCAL_REGISTRY_HELM := registry.${LOCAL_REGISTRY}
 IMAGE_NAME := go-mail-service
-IMAGE_VERSION := 1.3.1
+IMAGE_VERSION := latest
 
 .DEFAULT_GOAL := start
 
@@ -27,7 +29,19 @@ test: ## run tests
 .PHONY: start-cluster
 start-cluster:
 	@k3d cluster create --config ${ROOT_DIR}k3d/mailcluster.yaml
-	@helm install gomailservice --set service.port=$(API_PORT) \
+
+.PHONY: push-to-registry
+push-to-registry: ## build and push docker image to registry
+	@docker build -f ${ROOT_DIR}Dockerfile . -t ${IMAGE_NAME}:${IMAGE_VERSION}
+	@docker tag ${IMAGE_NAME}:${IMAGE_VERSION} ${LOCAL_REGISTRY}/${IMAGE_NAME}:${IMAGE_VERSION}
+	@docker push ${LOCAL_REGISTRY}/${IMAGE_NAME}:${IMAGE_VERSION}
+
+.PHONY: start-k3d
+start-k3d: start-cluster push-to-registry deploy-chart ## starts k3d and deploys local image with loadbalancer
+
+.PHONY: deploy-chart
+deploy-chart: ## deploy helm chart after image is pushed
+	@helm upgrade --install gomailservice --set service.port=$(API_PORT) \
 	 							--set defaultSenderMailAddress=$(DEFAULT_FROM_ADDRESS) \
 								--set defaultSenderName=$(DEFAULT_FROM_NAME) \
 								--set sendgridService.enabled=$(IS_SENDGRID_ENABLED) \
@@ -36,18 +50,10 @@ start-cluster:
 								--set mailjetService.apiKeyPublic=$(MAILJET_API_KEY_PUBLIC) \
 								--set mailjetService.apiKeyPrivate=$(MAILJET_API_KEY_PRIVATE) \
 								--set service.enabled=false \
-								--set image.repository=registry.localhost:5000/${IMAGE_NAME} \
+								--set image.repository=${LOCAL_REGISTRY_HELM}/${IMAGE_NAME} \
+								--set image.tag=${IMAGE_VERSION} \
 								${ROOT_DIR}charts/go-mail-service
 	@kubectl apply -f ${ROOT_DIR}k3d/service.yaml
-
-.PHONY: push-to-registry
-push-to-registry: ## build and push docker image to registry
-	@docker build -f ${ROOT_DIR}Dockerfile . -t ${IMAGE_NAME}
-	@docker tag ${IMAGE_NAME} localhost:5000/${IMAGE_NAME}:${IMAGE_VERSION}
-	@docker push localhost:5000/${IMAGE_NAME}:${IMAGE_VERSION}
-
-.PHONY: start-k3d
-start-k3d: start-cluster push-to-registry ## starts k3d and deploys local image with loadbalancer
 
 .PHONY: stop-k3d
 stop-k3d: ## stop K3d
