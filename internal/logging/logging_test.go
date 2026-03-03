@@ -73,7 +73,7 @@ func TestNewTextLoggerOutputsText(t *testing.T) {
 	if !strings.Contains(out, "level=INFO") {
 		t.Fatalf("expected text output to contain level=INFO, got: %q", firstLine(out))
 	}
-	if !(strings.Contains(out, `msg="text test message"`) || strings.Contains(out, "msg=text test message")) {
+	if !strings.Contains(out, `msg="text test message"`) && !strings.Contains(out, "msg=text test message") {
 		t.Fatalf("expected text output to contain msg with text test message, got: %q", firstLine(out))
 	}
 	if !strings.Contains(out, "k=v") {
