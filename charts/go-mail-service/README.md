@@ -1,6 +1,6 @@
 # go-mail-service
 
-![Version: 2.2.0](https://img.shields.io/badge/Version-2.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.2.0](https://img.shields.io/badge/AppVersion-2.2.0-informational?style=flat-square)
+![Version: 2.3.0](https://img.shields.io/badge/Version-2.3.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.3.0](https://img.shields.io/badge/AppVersion-2.3.0-informational?style=flat-square)
 
 Go service for sending emails
 
@@ -29,6 +29,7 @@ Go service for sending emails
 | ingress.tls | list | `[]` |  |
 | livenessProbe.httpGet.path | string | `"/"` |  |
 | livenessProbe.httpGet.port | string | `"http"` |  |
+| logLevel | string | `"info"` | Log level for the service (debug, info, warn, error) |
 | mailjetService.apiKeyPrivate | string | `""` | API key private for Mailjet |
 | mailjetService.apiKeyPublic | string | `""` | API key public for Mailjet |
 | mailjetService.enabled | bool | `false` |  |
