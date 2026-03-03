@@ -9,6 +9,9 @@ defaultSenderMailAddress: ""
 # the service will send mails as
 defaultSenderName: ""
 
+# -- Log level for the service (debug, info, warn, error)
+logLevel: "info"
+
 sendgridService:
   enabled: false
   # -- api key for sendgrid

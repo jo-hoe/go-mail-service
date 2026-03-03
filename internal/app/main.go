@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strings"
 
 	"github.com/jo-hoe/go-mail-service/internal/config"
+	"github.com/jo-hoe/go-mail-service/internal/logging"
 	"github.com/jo-hoe/go-mail-service/internal/mail"
 	"github.com/jo-hoe/go-mail-service/internal/mail/mailjet"
 	"github.com/jo-hoe/go-mail-service/internal/mail/noop"
@@ -21,18 +23,64 @@ const API_PORT_ENV_KEY = "API_PORT"
 const IS_NOOP_ENABLED_ENV_KEY = "IS_NOOP_ENABLED"
 const IS_SENDGRID_ENABLED_ENV_KEY = "IS_SENDGRID_ENABLED"
 const IS_MAILJET_ENABLED_ENV_KEY = "IS_MAILJET_ENABLED"
+const LOG_LEVEL_ENV_KEY = "LOG_LEVEL"
+
+func shouldSkipRequestLog(c echo.Context) bool {
+	// Do not log root probe endpoint
+	return c.Request().Method == http.MethodGet && c.Path() == "/"
+}
 
 func main() {
 	e := echo.New()
 
-	e.Use(middleware.RequestLogger())
+	envService := config.NewEnvService()
+	// initialize slog with level from env (defaults to info)
+	levelStr, _ := envService.Get(LOG_LEVEL_ENV_KEY)
+	logging.New(logging.Config{
+		Level:     logging.ParseLevel(levelStr),
+		AddSource: true,
+		JSON:      false,
+	})
+
+	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
+		Skipper:      shouldSkipRequestLog,
+		LogStatus:    true,
+		LogLatency:   true,
+		LogURI:       true,
+		LogMethod:    true,
+		LogError:     true,
+		LogRemoteIP:  true,
+		LogUserAgent: true,
+		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
+			if v.Error != nil {
+				slog.Error("http request",
+					"method", v.Method,
+					"uri", v.URI,
+					"status", v.Status,
+					"latency", v.Latency,
+					"remote_ip", v.RemoteIP,
+					"user_agent", v.UserAgent,
+					"error", v.Error,
+				)
+			} else {
+				slog.Info("http request",
+					"method", v.Method,
+					"uri", v.URI,
+					"status", v.Status,
+					"latency", v.Latency,
+					"remote_ip", v.RemoteIP,
+					"user_agent", v.UserAgent,
+				)
+			}
+			return nil
+		},
+	}))
 	e.Use(middleware.Recover())
 	e.Validator = &validation.GenericValidator{Validator: validator.New()}
 
 	e.POST("/v1/sendmail", sendMailHandler)
 	e.GET("/", probeHandler)
 
-	envService := config.NewEnvService()
 	port, err := envService.Get(API_PORT_ENV_KEY)
 	if err != nil {
 		e.Logger.Fatal(err)
@@ -45,20 +93,20 @@ func main() {
 func sendMailHandler(ctx echo.Context) (err error) {
 	mailAttributes := new(mail.MailAttributes)
 	if err = ctx.Bind(mailAttributes); err != nil {
-		ctx.Logger().Errorf("failed to bind mail attributes: %v", err)
+		slog.Error("failed to bind mail attributes", "error", err)
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	if err = ctx.Validate(mailAttributes); err != nil {
-		ctx.Logger().Errorf("failed to validate mail attributes: %v", err)
+		slog.Error("failed to validate mail attributes", "error", err)
 		return err
 	}
 
-	ctx.Logger().Info("received mail request")
+	slog.Info("received mail request")
 
 	// Get provider flags
 	providerFlags, err := getProviderFlags()
 	if err != nil {
-		ctx.Logger().Errorf("failed to get provider flags: %v", err)
+		slog.Error("failed to get provider flags", "error", err)
 		return err
 	}
 
@@ -77,7 +125,7 @@ func sendMailHandler(ctx echo.Context) (err error) {
 		})
 	}
 
-	ctx.Logger().Warn("no mail provider is enabled - mail not sent")
+	slog.Warn("no mail provider is enabled - mail not sent")
 	return ctx.JSON(http.StatusOK, mailAttributes)
 }
 
@@ -133,25 +181,25 @@ func checkMultipleProviders(ctx echo.Context, flags *providerFlags) {
 	}
 
 	if enabledCount > 1 {
-		ctx.Logger().Warnf("multiple mail providers are enabled (%d) - only one will be used based on priority: Mailjet → SendGrid → Noop", enabledCount)
+		slog.Warn("multiple mail providers are enabled - only one will be used based on priority: Mailjet → SendGrid → Noop", "enabled_count", enabledCount)
 	}
 }
 
 type mailSender func(echo.Context, mail.MailAttributes) error
 
 func sendMailWithProvider(ctx echo.Context, mailAttributes mail.MailAttributes, providerName string, priority string, sender mailSender) error {
-	ctx.Logger().Infof("using %s provider (priority: %s)", providerName, priority)
+	slog.Info("using provider", "provider", providerName, "priority", priority)
 
 	if err := sender(ctx, mailAttributes); err != nil {
-		ctx.Logger().Errorf("%s provider failed: %v", strings.ToLower(providerName), err)
+		slog.Error("provider failed", "provider", strings.ToLower(providerName), "error", err)
 		return err
 	}
 
-	successMsg := fmt.Sprintf("mail successfully sent via %s provider", providerName)
 	if providerName == "Noop" {
-		successMsg = fmt.Sprintf("mail successfully processed by %s provider", providerName)
+		slog.Info("mail processed", "provider", providerName)
+	} else {
+		slog.Info("mail sent", "provider", providerName)
 	}
-	ctx.Logger().Info(successMsg)
 
 	return ctx.JSON(http.StatusOK, mailAttributes)
 }

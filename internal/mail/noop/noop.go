@@ -2,7 +2,7 @@ package noop
 
 import (
 	"context"
-	"log"
+	"log/slog"
 
 	"github.com/jo-hoe/go-mail-service/internal/mail"
 )
@@ -14,9 +14,8 @@ func NewNoopService() *NoopService {
 }
 
 func (service *NoopService) SendMail(ctx context.Context, attributes mail.MailAttributes) error {
-	log.Printf("noop: preparing to send mail - to: %s, subject: %s", attributes.To, attributes.Subject)
-	log.Printf("noop: mail details - from: %s (%s), html content length: %d bytes",
-		attributes.From, attributes.FromName, len(attributes.HtmlContent))
-	log.Printf("noop: mail processed (no actual sending - noop mode)")
+	slog.Info("noop: preparing to send mail", "to", attributes.To, "subject", attributes.Subject)
+	slog.Debug("noop: mail details", "from", attributes.From, "from_name", attributes.FromName, "html_len", len(attributes.HtmlContent))
+	slog.Info("noop: mail processed (no actual sending - noop mode)")
 	return nil
 }

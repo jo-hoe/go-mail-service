@@ -20,6 +20,10 @@ update: ## update dependencies
 lint: ## run linters
 	golangci-lint run -E dupl -E gocyclo -E gosec -E misspell
 
+.PHONY: test
+test: ## run tests
+	@go test ./...
+
 .PHONY: start-cluster
 start-cluster:
 	@k3d cluster create --config ${ROOT_DIR}k3d/mailcluster.yaml

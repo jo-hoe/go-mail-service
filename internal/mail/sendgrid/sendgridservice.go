@@ -3,7 +3,7 @@ package sendgrid
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"strings"
 
 	"github.com/jo-hoe/go-mail-service/internal/mail"
@@ -27,17 +27,17 @@ func NewSendGridService(config *SendGridConfig) *SendGridService {
 }
 
 func (service *SendGridService) SendMail(ctx context.Context, attributes mail.MailAttributes) error {
-	log.Printf("sendgrid: preparing to send mail")
+	slog.Info("sendgrid: preparing to send mail")
 
 	message := service.createMessage(attributes)
 	err := service.sendRequest(ctx, message)
 
 	if err != nil {
-		log.Printf("sendgrid: failed to send mail: %v", err)
+		slog.Error("sendgrid: failed to send mail", "error", err)
 		return err
 	}
 
-	log.Printf("sendgrid: mail sent successfully")
+	slog.Info("sendgrid: mail sent successfully")
 	return nil
 }
 
@@ -82,21 +82,21 @@ func (service *SendGridService) sendRequest(ctx context.Context, mailObject *sgm
 	request.Method = "POST"
 	request.Body = sgmail.GetRequestBody(mailObject)
 
-	log.Printf("sendgrid: sending request to SendGrid API")
+	slog.Info("sendgrid: sending request to SendGrid API")
 	result, err := sendgrid.MakeRequestWithContext(ctx, request)
 
 	if err != nil {
-		log.Printf("sendgrid: request error: %v", err)
+		slog.Error("sendgrid: request error", "error", err)
 		return err
 	}
 
-	log.Printf("sendgrid: received response - status code: %d", result.StatusCode)
+	slog.Info("sendgrid: received response", "status_code", result.StatusCode)
 
 	if result.StatusCode != 202 {
-		log.Printf("sendgrid: API error - status code: %d, body: %s", result.StatusCode, result.Body)
+		slog.Error("sendgrid: API error", "status_code", result.StatusCode, "body", result.Body)
 		return fmt.Errorf("SendGrid could not send mail. [%d]: %s", result.StatusCode, result.Body)
 	}
 
-	log.Printf("sendgrid: response headers: %v", result.Headers)
+	slog.Debug("sendgrid: response headers", "headers", result.Headers)
 	return nil
 }

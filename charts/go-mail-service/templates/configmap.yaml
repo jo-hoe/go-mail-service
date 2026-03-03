@@ -11,3 +11,4 @@ data:
   isSendgridServiceEnabled: "{{ .Values.sendgridService.enabled }}"
   isMailjetServiceEnabled: "{{ .Values.mailjetService.enabled }}"
   isNoopServiceEnabled: "{{ .Values.noopService.enabled }}"
+  logLevel: "{{ .Values.logLevel }}"
