@@ -42,24 +42,24 @@ start-k3d: start-cluster push-to-registry deploy-chart ## starts k3d and deploys
 .PHONY: deploy-chart
 deploy-chart: ## deploy helm chart after image is pushed
 	@helm upgrade --install gomailservice \
-								--set logLevel=$(LOG_LEVEL) \
-								--set sender.address=$(DEFAULT_FROM_ADDRESS) \
-								--set sender.name=$(DEFAULT_FROM_NAME) \
-								--set http.port=$(HTTP_PORT) \
-								--set smtp.port=$(SMTP_PORT) \
-								--set smtp.domain=$(SMTP_DOMAIN) \
-								--set smtp.auth.required=$(SMTP_AUTH_REQUIRED) \
-								--set smtp.auth.username=$(SMTP_AUTH_USERNAME) \
-								--set smtp.auth.password=$(SMTP_AUTH_PASSWORD) \
-								--set provider.noop.enabled=$(IS_NOOP_ENABLED) \
-								--set provider.sendgrid.enabled=$(IS_SENDGRID_ENABLED) \
-								--set provider.sendgrid.apiKey=$(SENDGRID_API_KEY) \
-								--set provider.mailjet.enabled=$(IS_MAILJET_ENABLED) \
-								--set provider.mailjet.apiKeyPublic=$(MAILJET_API_KEY_PUBLIC) \
-								--set provider.mailjet.apiKeyPrivate=$(MAILJET_API_KEY_PRIVATE) \
+								--set-string logLevel="$(LOG_LEVEL)" \
+								--set-string sender.address="$(DEFAULT_FROM_ADDRESS)" \
+								--set-string sender.name="$(DEFAULT_FROM_NAME)" \
+								--set http.port="$(HTTP_PORT)" \
+								--set smtp.port="$(SMTP_PORT)" \
+								--set-string smtp.domain="$(SMTP_DOMAIN)" \
+								--set smtp.auth.required="$(SMTP_AUTH_REQUIRED)" \
+								--set-string smtp.auth.username="$(SMTP_AUTH_USERNAME)" \
+								--set-string smtp.auth.password="$(SMTP_AUTH_PASSWORD)" \
+								--set provider.noop.enabled="$(IS_NOOP_ENABLED)" \
+								--set provider.sendgrid.enabled="$(IS_SENDGRID_ENABLED)" \
+								--set-string provider.sendgrid.apiKey="$(SENDGRID_API_KEY)" \
+								--set provider.mailjet.enabled="$(IS_MAILJET_ENABLED)" \
+								--set-string provider.mailjet.apiKeyPublic="$(MAILJET_API_KEY_PUBLIC)" \
+								--set-string provider.mailjet.apiKeyPrivate="$(MAILJET_API_KEY_PRIVATE)" \
 								--set service.enabled=false \
-								--set image.repository=${LOCAL_REGISTRY_HELM}/${IMAGE_NAME} \
-								--set image.tag=${IMAGE_VERSION} \
+								--set image.repository="${LOCAL_REGISTRY_HELM}/${IMAGE_NAME}" \
+								--set image.tag="${IMAGE_VERSION}" \
 								${ROOT_DIR}charts/go-mail-service
 	@kubectl apply -f ${ROOT_DIR}k3d/service.yaml
 

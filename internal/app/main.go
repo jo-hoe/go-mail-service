@@ -61,6 +61,14 @@ func main() {
 	}
 
 	go func() {
+		addr := fmt.Sprintf(":%d", cfg.HTTP.Port)
+		slog.Info("http: server starting", "addr", addr)
+		if err := e.Start(addr); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			slog.Error("http server stopped", "error", err)
+		}
+	}()
+
+	go func() {
 		if err := smtpServer.Start(); err != nil {
 			slog.Error("smtp server stopped", "error", err)
 		}

@@ -6,7 +6,16 @@ spec:
   type: LoadBalancer
   selector:
     app.kubernetes.io/name: go-mail-service
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
   ports:
-    - port: 80
-      targetPort: 80
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+    - name: smtp
+      port: 587
+      targetPort: 587
       protocol: TCP

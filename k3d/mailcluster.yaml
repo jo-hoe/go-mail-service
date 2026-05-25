@@ -9,7 +9,10 @@ kubeAPI:
 servers: 1
 agents: 1 
 ports:
-  - port: 80:80 # same as `--port '80:80@loadbalancer'`
+  - port: 8080:80
+    nodeFilters:
+      - loadbalancer
+  - port: 5870:587
     nodeFilters:
       - loadbalancer
 registries: # define how registries should be created or used
