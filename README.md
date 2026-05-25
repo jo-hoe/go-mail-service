@@ -218,4 +218,4 @@ Run the linting locally by executing.
 make lint
 ```
 
-The lint configuration lives in `.golangci.yml` (linters: `dupl`, `gocyclo`, `gosec`, `misspell`).
+The lint configuration lives in `.golangci.yml`.
