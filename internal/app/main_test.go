@@ -2,71 +2,90 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/go-playground/validator"
+	"github.com/jo-hoe/go-mail-service/internal/mail"
+	"github.com/jo-hoe/go-mail-service/internal/mail/noop"
 	"github.com/jo-hoe/go-mail-service/internal/validation"
 	"github.com/labstack/echo/v4"
 )
 
-func Test_sendMailHandler(t *testing.T) {
-	if err := os.Setenv(IS_NOOP_ENABLED_ENV_KEY, "true"); err != nil {
-		t.Fatalf("Failed to set environment variable: %v", err)
-	}
-	defer func() {
-		if err := os.Unsetenv(IS_NOOP_ENABLED_ENV_KEY); err != nil {
-			t.Fatalf("Failed to unset environment variable: %v", err)
-		}
-	}()
-	if err := os.Setenv(IS_SENDGRID_ENABLED_ENV_KEY, "false"); err != nil {
-		t.Fatalf("Failed to set environment variable: %v", err)
-	}
-	defer func() {
-		if err := os.Unsetenv(IS_SENDGRID_ENABLED_ENV_KEY); err != nil {
-			t.Fatalf("Failed to unset environment variable: %v", err)
-		}
-	}()
-	if err := os.Setenv(IS_MAILJET_ENABLED_ENV_KEY, "false"); err != nil {
-		t.Fatalf("Failed to set environment variable: %v", err)
-	}
-	defer func() {
-		if err := os.Unsetenv(IS_MAILJET_ENABLED_ENV_KEY); err != nil {
-			t.Fatalf("Failed to unset environment variable: %v", err)
-		}
-	}()
+// errorMailService always returns an error from SendMail.
+type errorMailService struct{}
 
-	type args struct {
-		ctx echo.Context
-	}
+func (e *errorMailService) SendMail(_ context.Context, _ mail.MailAttributes) error {
+	return echo.NewHTTPError(http.StatusInternalServerError, "send failed")
+}
+
+func Test_sendMailHandler(t *testing.T) {
 	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
+		name       string
+		body       string
+		svc        mail.MailService
+		wantStatus int
+		wantErr    bool
 	}{
 		{
-			name: "handle basic mail",
-			args: args{
-				ctx: newContextWithBody(`{"to": "test@example.com,test2@example.com", "subject": "Test Subject", "content": "Test Body"}`),
-			},
-			wantErr: false,
+			name:       "valid request",
+			body:       `{"to": "test@example.com", "subject": "Test Subject", "content": "Test Body"}`,
+			svc:        noop.NewNoopService(),
+			wantStatus: http.StatusOK,
+			wantErr:    false,
 		},
 		{
-			name: "missing field",
-			args: args{
-				ctx: newContextWithBody(`{}`),
-			},
+			name:       "multiple recipients",
+			body:       `{"to": "a@example.com,b@example.com", "subject": "Test", "content": "Body"}`,
+			svc:        noop.NewNoopService(),
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name:    "missing required field",
+			body:    `{}`,
+			svc:     noop.NewNoopService(),
+			wantErr: true,
+		},
+		{
+			name:    "invalid json",
+			body:    `not json`,
+			svc:     noop.NewNoopService(),
+			wantErr: true,
+		},
+		{
+			name:    "service error",
+			body:    `{"to": "test@example.com", "subject": "Subject", "content": "Body"}`,
+			svc:     &errorMailService{},
 			wantErr: true,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := sendMailHandler(tt.args.ctx); (err != nil) != tt.wantErr {
+			ctx := newContextWithBody(tt.body)
+			handler := sendMailHandler(tt.svc)
+			err := handler(ctx)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("sendMailHandler() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
+	}
+}
+
+func Test_probeHandler(t *testing.T) {
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	rec := httptest.NewRecorder()
+	ctx := e.NewContext(req, rec)
+
+	if err := probeHandler(ctx); err != nil {
+		t.Errorf("probeHandler() error: %v", err)
+	}
+	if rec.Code != http.StatusOK {
+		t.Errorf("probeHandler() status = %d, want %d", rec.Code, http.StatusOK)
 	}
 }
 
@@ -76,6 +95,5 @@ func newContextWithBody(body string) echo.Context {
 	req := httptest.NewRequest(http.MethodPost, "/", bytes.NewReader([]byte(body)))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
-	c := e.NewContext(req, rec)
-	return c
+	return e.NewContext(req, rec)
 }

@@ -11,5 +11,5 @@ spec:
     - name: wget
       image: busybox
       command: ['wget']
-      args: ['{{ include "go-mail-service.fullname" . }}:{{ .Values.service.port }}']
+      args: ['{{ include "go-mail-service.fullname" . }}:{{ .Values.http.port }}']
   restartPolicy: Never

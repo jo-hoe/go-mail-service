@@ -5,10 +5,39 @@ metadata:
   labels:
     {{- include "go-mail-service.labels" . | nindent 4 }}
 data:
-  apiPort: "{{ .Values.service.port }}"
-  defaultSenderMailAddress: "{{ .Values.defaultSenderMailAddress }}"
-  defaultSenderName: "{{ .Values.defaultSenderName }}"
-  isSendgridServiceEnabled: "{{ .Values.sendgridService.enabled }}"
-  isMailjetServiceEnabled: "{{ .Values.mailjetService.enabled }}"
-  isNoopServiceEnabled: "{{ .Values.noopService.enabled }}"
-  logLevel: "{{ .Values.logLevel }}"
+  config.yaml: |
+    logLevel: "{{ .Values.logLevel }}"
+    sender:
+      address: "{{ .Values.sender.address }}"
+      name: "{{ .Values.sender.name }}"
+    http:
+      port: {{ .Values.http.port }}
+    smtp:
+      port: {{ .Values.smtp.port }}
+      domain: "{{ .Values.smtp.domain }}"
+      auth:
+        required: {{ .Values.smtp.auth.required }}
+        username: "{{ .Values.smtp.auth.username }}"
+        {{- if .Values.smtp.auth.required }}
+        passwordFile: "{{ .Values.smtp.auth.secret.mountPath }}/password"
+        {{- end }}
+      tls:
+        enabled: {{ .Values.smtp.tls.enabled }}
+        {{- if .Values.smtp.tls.enabled }}
+        certFile: "{{ .Values.smtp.tls.certFile }}"
+        keyFile: "{{ .Values.smtp.tls.keyFile }}"
+        {{- end }}
+    provider:
+      mailjet:
+        enabled: {{ .Values.provider.mailjet.enabled }}
+        {{- if .Values.provider.mailjet.enabled }}
+        apiKeyPublicFile: "{{ .Values.provider.mailjet.secret.mountPath }}/apiKeyPublic"
+        apiKeyPrivateFile: "{{ .Values.provider.mailjet.secret.mountPath }}/apiKeyPrivate"
+        {{- end }}
+      sendgrid:
+        enabled: {{ .Values.provider.sendgrid.enabled }}
+        {{- if .Values.provider.sendgrid.enabled }}
+        apiKeyFile: "{{ .Values.provider.sendgrid.secret.mountPath }}/apiKey"
+        {{- end }}
+      noop:
+        enabled: {{ .Values.provider.noop.enabled }}

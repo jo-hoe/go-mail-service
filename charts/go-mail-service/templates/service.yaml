@@ -7,11 +7,20 @@ metadata:
     {{- include "go-mail-service.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
+  # Session affinity ensures all packets of an SMTP TCP connection reach the same pod.
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
   ports:
-    - port: {{ .Values.service.port }}
+    - port: {{ .Values.http.port }}
       targetPort: http
       protocol: TCP
       name: http
+    - port: {{ .Values.smtp.port }}
+      targetPort: smtp
+      protocol: TCP
+      name: smtp
   selector:
     {{- include "go-mail-service.selectorLabels" . | nindent 4 }}
 {{- end }}

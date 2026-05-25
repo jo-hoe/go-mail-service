@@ -5,11 +5,18 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/jo-hoe/go-mail-service)](https://goreportcard.com/report/github.com/jo-hoe/go-mail-service)
 [![Coverage Status](https://coveralls.io/repos/github/jo-hoe/go-mail-service/badge.svg?branch=main)](https://coveralls.io/github/jo-hoe/go-mail-service?branch=main)
 
-A simple mail service that allows you to send mails.
-Currently supports:
+A mail service exposing both a REST API and an SMTP listener, backed by pluggable providers.
+
+**Providers:**
 
 - [SendGrid](https://sendgrid.com/)
 - [Mailjet](https://www.mailjet.com/)
+- Noop (logs mail without sending — development only)
+
+**Interfaces:**
+
+- HTTP `POST /v1/sendmail` (proprietary REST API, default port `8080`)
+- SMTP listener with optional `AUTH PLAIN` and STARTTLS (default port `587`)
 
 ## Go Client Library
 
@@ -34,7 +41,7 @@ import (
 
 func main() {
     // Create a new client
-    mailClient := client.NewClient("http://localhost:80")
+    mailClient := client.NewClient("http://localhost:8080")
 
     // Create a mail request
     request := client.MailRequest{
@@ -99,86 +106,100 @@ In case you want to deploy and access the service on k3d you will need to instal
 
 Run the project using `make`. Make is typically installed by default on Linux and Mac.
 
-### Environment
+## Configuration
 
-Create a `.env` file by copying the example file:
+The service reads a single YAML file at the path given by `CONFIG_PATH` (default `/config/config.yaml`). Secrets are read from files mounted at paths referenced in the config — **the service does not consume any other environment variables**.
+
+### Config file shape
+
+```yaml
+logLevel: "info"          # debug | info | warn | error
+
+sender:
+  address: "noreply@example.com"
+  name: "My Service"
+
+http:
+  port: 8080
+
+smtp:
+  port: 587
+  domain: "mail.example.com"     # advertised in EHLO
+  auth:
+    required: true
+    username: "smtp-user"
+    passwordFile: "/secrets/smtp/password"
+  tls:
+    enabled: false
+    certFile: ""
+    keyFile: ""
+
+provider:
+  # Enable exactly one. Priority if multiple are enabled: mailjet > sendgrid > noop.
+  mailjet:
+    enabled: false
+    apiKeyPublicFile:  "/secrets/mailjet/apiKeyPublic"
+    apiKeyPrivateFile: "/secrets/mailjet/apiKeyPrivate"
+  sendgrid:
+    enabled: false
+    apiKeyFile: "/secrets/sendgrid/apiKey"
+  noop:
+    enabled: false
+```
+
+A ready-to-run example with the noop provider lives at `local/config.yaml`.
+
+> ⚠️ The **noop** provider logs full mail details (recipients, subject, body) and is for development/testing only. Never enable it in production.
+
+### Local Makefile workflow
+
+The Makefile uses a `.env` file to feed `helm --set` flags during local k3d deployment. The Go app itself does not read these variables.
 
 ```bash
-cp .env.example .env
+cp .env.example .env   # then edit values
 ```
-
-Then edit the `.env` file with your actual configuration values.
-
-#### SendGrid Configuration
-
-```.env
-API_PORT=80
-IS_SENDGRID_ENABLED=true
-IS_MAILJET_ENABLED=false
-IS_NOOP_ENABLED=false
-DEFAULT_FROM_ADDRESS=<email address>
-DEFAULT_FROM_NAME=<mail sender in clear text>
-SENDGRID_API_KEY=<sendgrid api key>
-```
-
-#### Mailjet Configuration
-
-```.env
-API_PORT=80
-IS_SENDGRID_ENABLED=false
-IS_MAILJET_ENABLED=true
-IS_NOOP_ENABLED=false
-DEFAULT_FROM_ADDRESS=<email address>
-DEFAULT_FROM_NAME=<mail sender in clear text>
-MAILJET_API_KEY_PUBLIC=<mailjet public api key>
-MAILJET_API_KEY_PRIVATE=<mailjet private api key>
-```
-
-**Note:** Only one mail service should be enabled at a time. The service priority is: Mailjet → SendGrid → Noop.
-
-#### Noop Configuration (Development/Testing Only)
-
-```.env
-API_PORT=80
-IS_SENDGRID_ENABLED=false
-IS_MAILJET_ENABLED=false
-IS_NOOP_ENABLED=true
-```
-
-**⚠️ WARNING:** The Noop service is for **development and testing purposes only**. It logs all mail details including:
-
-- Email addresses (to/from)
-- Mail subjects
-- Mail content
-
-**DO NOT use the Noop service in production environments** as it will log personal data. Use SendGrid or Mailjet in production, which are configured to not log personal information.
 
 ## Run
 
-### Docker
-
-For plain docker run the following commands:
+### Plain Docker (uses local/config.yaml)
 
 ```bash
-docker build . -t go-mail-service
-docker run --rm -p 80:80 --env-file .env go-mail-service
+make start-docker
 ```
 
-### K3s
+This builds the image, mounts `local/config.yaml` to `/config/config.yaml`, and exposes both HTTP (`8080`) and SMTP (`587`).
 
-To run in k3d use the following command
+### k3d
 
 ```bash
-make start-k3s
+make start-k3d
 ```
 
-## Example Request
+Spins up a local k3d cluster, pushes the image to its registry, and deploys the Helm chart using values driven from `.env`.
 
-The service offers a basic API to send mails.
-One can specify the subject, content, and addressed to send to.
+## Example Requests
+
+### HTTP REST API
 
 ```bash
-curl -H "Content-Type: application/json" --data '{"subject":"my subject", "content":"my message", "to":"test@mail.com,test2@mail.com"}' http://localhost:80/v1/sendmail
+curl -H "Content-Type: application/json" \
+     --data '{"subject":"my subject","content":"my message","to":"test@mail.com,test2@mail.com"}' \
+     http://localhost:8080/v1/sendmail
+```
+
+### SMTP
+
+```bash
+# Without auth (smtp.auth.required: false)
+swaks --to recipient@example.com --from sender@example.com \
+      --server localhost --port 587
+
+# With AUTH PLAIN
+swaks --to recipient@example.com --server localhost --port 587 \
+      --auth-user smtp-user --auth-password secret
+
+# Probe STARTTLS
+openssl s_client -starttls smtp -connect localhost:587
 ```
 
 ## Linting
@@ -193,6 +214,8 @@ The project used `golangci-lint` for linting.
 
 Run the linting locally by executing.
 
-```cli
-golangci-lint run ./...
+```bash
+make lint
 ```
+
+The lint configuration lives in `.golangci.yml` (linters: `dupl`, `gocyclo`, `gosec`, `misspell`).

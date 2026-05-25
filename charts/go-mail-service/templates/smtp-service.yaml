@@ -1,0 +1,27 @@
+{{- if and .Values.service.enabled (ne .Values.smtp.service.type "ClusterIP") -}}
+{{- /* A dedicated Service is created for external SMTP access when smtp.service.type != ClusterIP.
+       The main Service always stays ClusterIP to keep HTTP and SMTP exposure independent. */ -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "go-mail-service.fullname" . }}-smtp
+  labels:
+    {{- include "go-mail-service.labels" . | nindent 4 }}
+  {{- with .Values.smtp.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.smtp.service.type }}
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+  ports:
+    - port: {{ .Values.smtp.port }}
+      targetPort: smtp
+      protocol: TCP
+      name: smtp
+  selector:
+    {{- include "go-mail-service.selectorLabels" . | nindent 4 }}
+{{- end }}

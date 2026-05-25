@@ -25,7 +25,7 @@ import (
 
 func main() {
     // Create a new client
-    mailClient := client.NewClient("http://localhost:80")
+    mailClient := client.NewClient("http://localhost:8080")
 
     // Create a mail request
     request := client.MailRequest{
@@ -56,14 +56,14 @@ Creates a new mail service client with the given base URL and optional configura
 
 ```go
 // Basic client
-client := client.NewClient("http://localhost:80")
+client := client.NewClient("http://localhost:8080")
 
 // Client with custom timeout
-client := client.NewClient("http://localhost:80", client.WithTimeout(10*time.Second))
+client := client.NewClient("http://localhost:8080", client.WithTimeout(10*time.Second))
 
 // Client with custom HTTP client
 httpClient := &http.Client{Timeout: 15 * time.Second}
-client := client.NewClient("http://localhost:80", client.WithHTTPClient(httpClient))
+client := client.NewClient("http://localhost:8080", client.WithHTTPClient(httpClient))
 ```
 
 ### Client Options
@@ -87,8 +87,8 @@ Sends an email using the mail service.
 - `To` (required): Recipient email address(es), comma-separated for multiple recipients
 - `Subject` (required): Email subject line
 - `HtmlContent` (required): Email body content in HTML format
-- `From` (optional): Sender email address. If not provided, the service will use the default sender address configured in the `DEFAULT_FROM_ADDRESS` environment variable
-- `FromName` (optional): Display name for the sender. If not provided, the service will use the default sender name configured in the `DEFAULT_FROM_NAME` environment variable
+- `From` (optional): Sender email address. If not provided, the service will use its configured default sender address (`sender.address` in the service config)
+- `FromName` (optional): Display name for the sender. If not provided, the service will use its configured default sender name (`sender.name` in the service config)
 
 ```go
 request := client.MailRequest{

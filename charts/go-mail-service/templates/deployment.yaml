@@ -15,8 +15,15 @@ spec:
     metadata:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
-        checksum/secret-sendgrid: {{ include (print $.Template.BasePath "/sendgridsecret.yaml") . | sha256sum }}
+        {{- if .Values.smtp.auth.required }}
+        checksum/secret-smtp: {{ include (print $.Template.BasePath "/smtpsecret.yaml") . | sha256sum }}
+        {{- end }}
+        {{- if .Values.provider.mailjet.enabled }}
         checksum/secret-mailjet: {{ include (print $.Template.BasePath "/mailjetsecret.yaml") . | sha256sum }}
+        {{- end }}
+        {{- if .Values.provider.sendgrid.enabled }}
+        checksum/secret-sendgrid: {{ include (print $.Template.BasePath "/sendgridsecret.yaml") . | sha256sum }}
+        {{- end }}
         {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -41,77 +48,58 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
+              containerPort: {{ .Values.http.port }}
               protocol: TCP
+            - name: smtp
+              containerPort: {{ .Values.smtp.port }}
+              protocol: TCP
+          env:
+            - name: CONFIG_PATH
+              value: /config/config.yaml
           livenessProbe:
             {{- toYaml .Values.livenessProbe | nindent 12 }}
           readinessProbe:
             {{- toYaml .Values.readinessProbe | nindent 12 }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          {{- with .Values.volumeMounts }}
           volumeMounts:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
-          env:
-            - name: API_PORT
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "go-mail-service.fullname" . }}-config
-                  key: apiPort
-            - name: LOG_LEVEL
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "go-mail-service.fullname" . }}-config
-                  key: logLevel
-            - name: DEFAULT_FROM_ADDRESS
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "go-mail-service.fullname" . }}-config
-                  key: defaultSenderMailAddress
-            - name: DEFAULT_FROM_NAME
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "go-mail-service.fullname" . }}-config
-                  key: defaultSenderName
-            - name: IS_NOOP_ENABLED
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "go-mail-service.fullname" . }}-config
-                  key: isNoopServiceEnabled
-            - name: IS_SENDGRID_ENABLED
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "go-mail-service.fullname" . }}-config
-                  key: isSendgridServiceEnabled
-            - name: IS_MAILJET_ENABLED
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "go-mail-service.fullname" . }}-config
-                  key: isMailjetServiceEnabled
-            {{- if .Values.sendgridService.enabled }}
-            - name: SENDGRID_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: "{{ .Values.sendgridService.secretName }}"
-                  key: sendgridApiKey
+            - name: config
+              mountPath: /config
+              readOnly: true
+            {{- if .Values.smtp.auth.required }}
+            - name: smtp-secret
+              mountPath: {{ .Values.smtp.auth.secret.mountPath }}
+              readOnly: true
             {{- end }}
-            {{- if .Values.mailjetService.enabled }}
-            - name: MAILJET_API_KEY_PUBLIC
-              valueFrom:
-                secretKeyRef:
-                  name: "{{ .Values.mailjetService.secretName }}"
-                  key: mailjetApiKeyPublic
-            - name: MAILJET_API_KEY_PRIVATE
-              valueFrom:
-                secretKeyRef:
-                  name: "{{ .Values.mailjetService.secretName }}"
-                  key: mailjetApiKeyPrivate
+            {{- if .Values.provider.mailjet.enabled }}
+            - name: mailjet-secret
+              mountPath: {{ .Values.provider.mailjet.secret.mountPath }}
+              readOnly: true
             {{- end }}
-      {{- with .Values.volumes }}
+            {{- if .Values.provider.sendgrid.enabled }}
+            - name: sendgrid-secret
+              mountPath: {{ .Values.provider.sendgrid.secret.mountPath }}
+              readOnly: true
+            {{- end }}
       volumes:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        - name: config
+          configMap:
+            name: {{ include "go-mail-service.fullname" . }}-config
+        {{- if .Values.smtp.auth.required }}
+        - name: smtp-secret
+          secret:
+            secretName: {{ .Values.smtp.auth.secret.name }}
+        {{- end }}
+        {{- if .Values.provider.mailjet.enabled }}
+        - name: mailjet-secret
+          secret:
+            secretName: {{ .Values.provider.mailjet.secret.name }}
+        {{- end }}
+        {{- if .Values.provider.sendgrid.enabled }}
+        - name: sendgrid-secret
+          secret:
+            secretName: {{ .Values.provider.sendgrid.secret.name }}
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

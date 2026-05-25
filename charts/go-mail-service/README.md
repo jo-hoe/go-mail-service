@@ -1,6 +1,6 @@
 # go-mail-service
 
-![Version: 2.3.0](https://img.shields.io/badge/Version-2.3.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.3.0](https://img.shields.io/badge/AppVersion-2.3.0-informational?style=flat-square)
+![Version: 3.0.0](https://img.shields.io/badge/Version-3.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.0.0](https://img.shields.io/badge/AppVersion-3.0.0-informational?style=flat-square)
 
 Go service for sending emails
 
@@ -13,12 +13,11 @@ Go service for sending emails
 | autoscaling.maxReplicas | int | `100` |  |
 | autoscaling.minReplicas | int | `1` |  |
 | autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
-| defaultSenderMailAddress | string | `""` | This is the mail address the service will  per default send mails from  |
-| defaultSenderName | string | `""` | This is the name of the sender who  the service will send mails as |
 | fullnameOverride | string | `""` |  |
+| http | object | `{"port":8080}` | HTTP server settings |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.repository | string | `"ghcr.io/jo-hoe/go-mail-service"` |  |
-| image.tag | string | `""` |  |
+| image.tag | string | `""` | Overrides the image tag (default: chart appVersion) |
 | imagePullSecrets | list | `[]` |  |
 | ingress.annotations | object | `{}` |  |
 | ingress.className | string | `""` |  |
@@ -30,31 +29,37 @@ Go service for sending emails
 | livenessProbe.httpGet.path | string | `"/"` |  |
 | livenessProbe.httpGet.port | string | `"http"` |  |
 | logLevel | string | `"info"` | Log level for the service (debug, info, warn, error) |
-| mailjetService.apiKeyPrivate | string | `""` | API key private for Mailjet |
-| mailjetService.apiKeyPublic | string | `""` | API key public for Mailjet |
-| mailjetService.enabled | bool | `false` |  |
-| mailjetService.secretName | string | `"mailjet-secret"` |  |
 | nameOverride | string | `""` |  |
 | nodeSelector | object | `{}` |  |
-| noopService | object | `{"enabled":false}` | noop service allows for debugging of apps it will not send mail but log perform input validation and log what received |
 | podAnnotations | object | `{}` |  |
 | podLabels | object | `{}` |  |
 | podSecurityContext | object | `{}` |  |
+| provider | object | `{"mailjet":{"apiKeyPrivate":"","apiKeyPublic":"","enabled":false,"secret":{"mountPath":"/secrets/mailjet","name":"mailjet-secret"}},"noop":{"enabled":false},"sendgrid":{"apiKey":"","enabled":false,"secret":{"mountPath":"/secrets/sendgrid","name":"sendgrid-secret"}}}` | Mail provider configuration. Enable exactly one provider. Priority if multiple are enabled: mailjet > sendgrid > noop. |
+| provider.mailjet.apiKeyPublic | string | `""` | Mailjet API keys. In production, leave empty and pre-create the K8s Secret instead. |
+| provider.mailjet.secret.mountPath | string | `"/secrets/mailjet"` | Mount path inside the container |
+| provider.mailjet.secret.name | string | `"mailjet-secret"` | Name of the K8s Secret (keys: apiKeyPublic, apiKeyPrivate) |
+| provider.noop | object | `{"enabled":false}` | Noop provider logs mail without sending. No secrets required. |
+| provider.sendgrid.apiKey | string | `""` | SendGrid API key. In production, leave empty and pre-create the K8s Secret instead. |
+| provider.sendgrid.secret.mountPath | string | `"/secrets/sendgrid"` | Mount path inside the container |
+| provider.sendgrid.secret.name | string | `"sendgrid-secret"` | Name of the K8s Secret (key: apiKey) |
 | readinessProbe.httpGet.path | string | `"/"` |  |
 | readinessProbe.httpGet.port | string | `"http"` |  |
 | replicaCount | int | `1` |  |
 | resources | object | `{}` |  |
 | securityContext | object | `{}` |  |
-| sendgridService.apiKey | string | `""` | api key for sendgrid |
-| sendgridService.enabled | bool | `false` |  |
-| sendgridService.secretName | string | `"sendgrid-secret"` |  |
-| service.enabled | bool | `true` |  |
-| service.port | int | `80` |  |
-| service.type | string | `"ClusterIP"` |  |
-| serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
-| serviceAccount.automount | bool | `true` | Automatically mount a ServiceAccount's API credentials? |
-| serviceAccount.create | bool | `true` | Specifies whether a service account should be created |
-| serviceAccount.name | string | `""` | The name of the service account to use. If not set and create is true, a name is generated using the fullname template |
+| sender | object | `{"address":"","name":""}` | Default outbound sender identity used when the request does not override From |
+| service | object | `{"enabled":true,"type":"ClusterIP"}` | Main ClusterIP service (exposes both http and smtp ports internally) |
+| serviceAccount.annotations | object | `{}` |  |
+| serviceAccount.automount | bool | `true` |  |
+| serviceAccount.create | bool | `true` |  |
+| serviceAccount.name | string | `""` |  |
+| smtp | object | `{"auth":{"password":"","required":true,"secret":{"mountPath":"/secrets/smtp","name":"smtp-secret"},"username":""},"domain":"","port":587,"service":{"annotations":{},"type":"ClusterIP"},"tls":{"certFile":"","enabled":false,"keyFile":""}}` | SMTP server settings |
+| smtp.auth.password | string | `""` | SMTP password. In production, leave empty and pre-create the K8s Secret instead. |
+| smtp.auth.secret.mountPath | string | `"/secrets/smtp"` | Path inside the container where the secret is mounted |
+| smtp.auth.secret.name | string | `"smtp-secret"` | Name of the K8s Secret containing the SMTP password (key: password) |
+| smtp.domain | string | `""` | Hostname advertised in EHLO |
+| smtp.service.annotations | object | `{}` | Annotations for the SMTP service (e.g. cloud LB annotations) |
+| smtp.service.type | string | `"ClusterIP"` | ClusterIP (internal only) or LoadBalancer (external). A separate Service is created when type is not ClusterIP. |
 | tolerations | list | `[]` |  |
 
 ----------------------------------------------

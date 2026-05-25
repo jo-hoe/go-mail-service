@@ -3,12 +3,15 @@ module github.com/jo-hoe/go-mail-service
 go 1.26.0
 
 require (
+	github.com/emersion/go-smtp v0.24.0
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/labstack/echo/v4 v4.15.2
 	github.com/sendgrid/sendgrid-go v3.16.1+incompatible
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
+	github.com/emersion/go-sasl v0.0.0-20241020182733-b788ff22d5a6 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/labstack/gommon v0.5.0 // indirect

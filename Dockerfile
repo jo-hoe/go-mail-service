@@ -13,9 +13,9 @@ RUN mkdir /secrets
 
 FROM gcr.io/distroless/static-debian12
 
-ENV API_PORT=80 \
-    IS_NOOP_ENABLED=true \
-    IS_SENDGRID_ENABLED=false
+# CONFIG_PATH is the only env var the app reads.
+# Mount the config file at /config/config.yaml (see charts/go-mail-service or local/config.yaml).
+ENV CONFIG_PATH=/config/config.yaml
 
 COPY --from=build /go/bin/app /
 COPY --from=build /secrets /run/secrets

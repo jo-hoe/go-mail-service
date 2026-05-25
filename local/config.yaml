@@ -1,0 +1,33 @@
+# Local development config for `make start-docker`.
+# Uses the noop provider so no real credentials are needed — emails are logged, not sent.
+logLevel: "debug"
+
+sender:
+  address: "sender@example.com"
+  name: "Mail Sender Name"
+
+http:
+  port: 8080
+
+smtp:
+  port: 587
+  domain: "mail.example.local"
+  auth:
+    required: false
+    username: ""
+    passwordFile: ""
+  tls:
+    enabled: false
+    certFile: ""
+    keyFile: ""
+
+provider:
+  mailjet:
+    enabled: false
+    apiKeyPublicFile: ""
+    apiKeyPrivateFile: ""
+  sendgrid:
+    enabled: false
+    apiKeyFile: ""
+  noop:
+    enabled: true

@@ -1,43 +1,75 @@
 # Default values for go-mail-service.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
-# -- This is the mail address the service will 
-# per default send mails from 
-defaultSenderMailAddress: ""
-# -- This is the name of the sender who 
-# the service will send mails as
-defaultSenderName: ""
 
 # -- Log level for the service (debug, info, warn, error)
 logLevel: "info"
 
-sendgridService:
-  enabled: false
-  # -- api key for sendgrid
-  apiKey: ""
-  secretName: "sendgrid-secret"
+# -- Default outbound sender identity used when the request does not override From
+sender:
+  address: ""
+  name: ""
 
-mailjetService:
-  enabled: false
-  # -- API key public for Mailjet
-  apiKeyPublic: ""
-  # -- API key private for Mailjet
-  apiKeyPrivate: ""
-  secretName: "mailjet-secret"
+# -- HTTP server settings
+http:
+  port: 8080
 
-# -- noop service allows for debugging of apps
-# it will not send mail but log perform input validation
-# and log what received
-noopService:
-  enabled: false
+# -- SMTP server settings
+smtp:
+  port: 587
+  # -- Hostname advertised in EHLO
+  domain: ""
+  auth:
+    required: true
+    username: ""
+    # -- SMTP password. In production, leave empty and pre-create the K8s Secret instead.
+    password: ""
+    secret:
+      # -- Name of the K8s Secret containing the SMTP password (key: password)
+      name: "smtp-secret"
+      # -- Path inside the container where the secret is mounted
+      mountPath: "/secrets/smtp"
+  tls:
+    enabled: false
+    certFile: ""
+    keyFile: ""
+  service:
+    # -- ClusterIP (internal only) or LoadBalancer (external).
+    # A separate Service is created when type is not ClusterIP.
+    type: ClusterIP
+    # -- Annotations for the SMTP service (e.g. cloud LB annotations)
+    annotations: {}
+
+# -- Mail provider configuration.
+# Enable exactly one provider. Priority if multiple are enabled: mailjet > sendgrid > noop.
+provider:
+  mailjet:
+    enabled: false
+    # -- Mailjet API keys. In production, leave empty and pre-create the K8s Secret instead.
+    apiKeyPublic: ""
+    apiKeyPrivate: ""
+    secret:
+      # -- Name of the K8s Secret (keys: apiKeyPublic, apiKeyPrivate)
+      name: "mailjet-secret"
+      # -- Mount path inside the container
+      mountPath: "/secrets/mailjet"
+  sendgrid:
+    enabled: false
+    # -- SendGrid API key. In production, leave empty and pre-create the K8s Secret instead.
+    apiKey: ""
+    secret:
+      # -- Name of the K8s Secret (key: apiKey)
+      name: "sendgrid-secret"
+      # -- Mount path inside the container
+      mountPath: "/secrets/sendgrid"
+  # -- Noop provider logs mail without sending. No secrets required.
+  noop:
+    enabled: false
 
 replicaCount: 1
 
 image:
   repository: ghcr.io/jo-hoe/go-mail-service
   pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
+  # -- Overrides the image tag (default: chart appVersion)
   tag: ""
 
 imagePullSecrets: []
@@ -45,14 +77,9 @@ nameOverride: ""
 fullnameOverride: ""
 
 serviceAccount:
-  # -- Specifies whether a service account should be created
   create: true
-  # -- Automatically mount a ServiceAccount's API credentials?
   automount: true
-  # -- Annotations to add to the service account
   annotations: {}
-  # -- The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
   name: ""
 
 podAnnotations: {}
@@ -69,32 +96,24 @@ securityContext: {}
   # runAsNonRoot: true
   # runAsUser: 1000
 
+# -- Main ClusterIP service (exposes both http and smtp ports internally)
 service:
   enabled: true
   type: ClusterIP
-  port: 80
 
 ingress:
   enabled: false
   className: ""
   annotations: {}
     # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
   hosts:
     - host: chart-example.local
       paths:
         - path: /
           pathType: ImplementationSpecific
   tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
 
 resources: {}
-  # -- We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
   # limits:
   #   cpu: 100m
   #   memory: 128Mi
@@ -119,7 +138,5 @@ autoscaling:
   # targetMemoryUtilizationPercentage: 80
 
 nodeSelector: {}
-
 tolerations: []
-
 affinity: {}
