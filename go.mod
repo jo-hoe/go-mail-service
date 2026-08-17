@@ -3,7 +3,7 @@ module github.com/jo-hoe/go-mail-service
 go 1.26.0
 
 require (
-	github.com/emersion/go-smtp v0.24.0
+	github.com/emersion/go-smtp v0.25.0
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/labstack/echo/v4 v4.15.4
 	github.com/sendgrid/sendgrid-go v3.16.1+incompatible
