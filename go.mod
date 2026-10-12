@@ -16,7 +16,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.2 // indirect
 	github.com/labstack/gommon v0.5.0 // indirect
 	github.com/leodido/go-urn v1.5.0 // indirect
-	github.com/mattn/go-colorable v0.1.15 // indirect
+	github.com/mattn/go-colorable v0.1.16 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/sendgrid/rest v2.6.9+incompatible // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
